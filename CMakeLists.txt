@@ -19,6 +19,7 @@ set(PROJECT_SOURCES
         mainwindow.ui
         structs.h
         imagemanagement.h
+        PPMimagetreatment.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

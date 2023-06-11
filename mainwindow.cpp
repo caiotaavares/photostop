@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "imagemanagement.h"
 #include "structs.h"
+#include "PPMimagetreatment.h"
 
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -43,5 +44,24 @@ void MainWindow::on_pushButton_clicked()
                                          QString::number(newImage.numrows),
                                          QString::number(newImage.maxval)
                                         ));
+}
+
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    QString imagePath = ui->comboBox->currentData().toString();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+    newImage = median_filter(newImage);
+    savePPMP3("result.ppm", newImage);
+
+    QPixmap resImage ("result.ppm");
+    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
 }
 
