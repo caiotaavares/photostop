@@ -19,7 +19,7 @@
      <rect>
       <x>20</x>
       <y>20</y>
-      <width>121</width>
+      <width>201</width>
       <height>25</height>
      </rect>
     </property>
@@ -30,9 +30,9 @@
    <widget class="QComboBox" name="comboBox">
     <property name="geometry">
      <rect>
-      <x>160</x>
+      <x>230</x>
       <y>20</y>
-      <width>111</width>
+      <width>151</width>
       <height>25</height>
      </rect>
     </property>
@@ -98,11 +98,11 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="pushButtonMedian">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>60</y>
+      <y>80</y>
       <width>121</width>
       <height>25</height>
      </rect>
@@ -111,17 +111,37 @@
      <string>Filtro da Mediana</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_3">
+   <widget class="QPushButton" name="pushButtonAverage">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>60</y>
+      <x>210</x>
+      <y>80</y>
       <width>111</width>
       <height>25</height>
      </rect>
     </property>
     <property name="text">
      <string>Filtro da Média</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxMedian">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>80</y>
+      <width>42</width>
+      <height>26</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBoxAverage">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>80</y>
+      <width>42</width>
+      <height>26</height>
+     </rect>
     </property>
    </widget>
   </widget>

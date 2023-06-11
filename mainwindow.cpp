@@ -17,6 +17,18 @@ MainWindow::MainWindow(QWidget *parent)
     // Adiciona as imagens ao ComboBox
     ui->comboBox->addItem("Lenna (P3)", "lennap3.ppm");
     ui->comboBox->addItem("Lenna (P6)", "lennap6.ppm");
+
+    QSpinBox *median = ui->spinBoxMedian;
+    median->setValue(3);
+    median->setSingleStep(2);
+    median->setMaximum(9);
+    median->setMinimum(3);
+
+    QSpinBox *average = ui->spinBoxAverage;
+    average->setValue(3);
+    average->setSingleStep(2);
+    average->setMaximum(9);
+    average->setMinimum(3);
 }
 
 MainWindow::~MainWindow()
