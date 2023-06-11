@@ -11,11 +11,11 @@ image processor written with C++ and QT
 * Exibir menssagens e código da execução (tela e arquivo)
 * Material a entregar (detalhes posteriormente)
 
-- [ ] Identificação do cabeçalho
-  - [ ] Tipo
-    - [ ] P2 PGM ASCII (exemplo)
-  - [ ] Dimensão
-  - [ ] Valor máximo
+- [X] Identificação do cabeçalho
+  - [X] Tipo
+    - [X] P2 PGM ASCII (exemplo)
+  - [X] Dimensão
+  - [X] Valor máximo
 - [ ] Filtragem espacial
   - [ ] Média (3x3, 5x5, ...)
   - [ ] Mediana (3x3, 5x5, ...)
