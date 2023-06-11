@@ -3,7 +3,59 @@
 
 #include "structs.h"
 
-int findMedian(Array pixel[3][3]) {
+int findMedianB(Array pixel[3][3]) {
+    int values[9];
+    int k = 0;
+
+    // Extract the values from the 3x3 matrix and store them in an array
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            values[k++] = pixel[i][j].B;
+        }
+    }
+
+    // Sort the values in ascending order
+    for (int i = 0; i < 9 - 1; i++) {
+        for (int j = 0; j < 9 - i - 1; j++) {
+            if (values[j] > values[j + 1]) {
+                int temp = values[j];
+                values[j] = values[j + 1];
+                values[j + 1] = temp;
+            }
+        }
+    }
+
+    // Return the median value, which is in the middle of the sorted array
+    return values[5];
+}
+
+int findMedianG(Array pixel[3][3]) {
+    int values[9];
+    int k = 0;
+
+    // Extract the values from the 3x3 matrix and store them in an array
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            values[k++] = pixel[i][j].G;
+        }
+    }
+
+    // Sort the values in ascending order
+    for (int i = 0; i < 9 - 1; i++) {
+        for (int j = 0; j < 9 - i - 1; j++) {
+            if (values[j] > values[j + 1]) {
+                int temp = values[j];
+                values[j] = values[j + 1];
+                values[j + 1] = temp;
+            }
+        }
+    }
+
+    // Return the median value, which is in the middle of the sorted array
+    return values[5];
+}
+
+int findMedianR(Array pixel[3][3]) {
     int values[9];
     int k = 0;
 
@@ -26,7 +78,7 @@ int findMedian(Array pixel[3][3]) {
     }
 
     // Return the median value, which is in the middle of the sorted array
-    return values[4];
+    return values[5];
 }
 
 // Median filter
@@ -57,9 +109,9 @@ Image median_filter(Image image) {
                 }
             }
 
-            filtered_image.array[row][col].R = findMedian(pixel);
-            filtered_image.array[row][col].G = findMedian(pixel);
-            filtered_image.array[row][col].B = findMedian(pixel);
+            filtered_image.array[row][col].R = findMedianR(pixel);
+            filtered_image.array[row][col].G = findMedianG(pixel);
+            filtered_image.array[row][col].B = findMedianB(pixel);
         }
     }
 

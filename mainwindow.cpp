@@ -15,7 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // Adiciona as imagens ao ComboBox
-    ui->comboBox->addItem("Lenna", "lenna.ppm");
+    ui->comboBox->addItem("Lenna (P3)", "lennap3.ppm");
+    ui->comboBox->addItem("Lenna (P6)", "lennap6.ppm");
 }
 
 MainWindow::~MainWindow()
@@ -59,6 +60,25 @@ void MainWindow::on_pushButton_2_clicked()
 
     Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
     newImage = median_filter(newImage);
+    savePPMP3("result.ppm", newImage);
+
+    QPixmap resImage ("result.ppm");
+    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+}
+
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    QString imagePath = ui->comboBox->currentData().toString();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+    newImage = average_filter(newImage);
     savePPMP3("result.ppm", newImage);
 
     QPixmap resImage ("result.ppm");
