@@ -14,29 +14,6 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>201</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Carregar Imagem</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboBox">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>20</y>
-      <width>151</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QLabel" name="image">
     <property name="geometry">
      <rect>
@@ -98,51 +75,117 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButtonMedian">
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>361</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>Carregar Imagem</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBox"/>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QSplitter" name="splitter">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>80</y>
-      <width>121</width>
-      <height>25</height>
+      <width>361</width>
+      <height>28</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Filtro da Mediana</string>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
     </property>
+    <widget class="QWidget" name="">
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QPushButton" name="pushButtonMedian">
+        <property name="text">
+         <string>Filtro da Mediana</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spinBoxMedian"/>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QPushButton" name="pushButtonAverage">
+        <property name="text">
+         <string>Filtro da Média</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spinBoxAverage"/>
+      </item>
+     </layout>
+    </widget>
    </widget>
-   <widget class="QPushButton" name="pushButtonAverage">
+   <widget class="QSplitter" name="splitter_2">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>80</y>
-      <width>111</width>
-      <height>25</height>
+      <x>20</x>
+      <y>120</y>
+      <width>361</width>
+      <height>27</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Filtro da Média</string>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
     </property>
-   </widget>
-   <widget class="QSpinBox" name="spinBoxMedian">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>80</y>
-      <width>42</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="spinBoxAverage">
-    <property name="geometry">
-     <rect>
-      <x>330</x>
-      <y>80</y>
-      <width>42</width>
-      <height>26</height>
-     </rect>
-    </property>
+    <widget class="QPushButton" name="pushButton_2">
+     <property name="minimumSize">
+      <size>
+       <width>170</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Laplanciano</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="ButtonR">
+        <property name="text">
+         <string>R</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ButtonG">
+        <property name="text">
+         <string>G</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ButtonB">
+        <property name="text">
+         <string>B</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     average->setSingleStep(2);
 //    average->setMaximum(15);
     average->setMinimum(3);
+
 }
 
 MainWindow::~MainWindow()
@@ -97,6 +98,85 @@ void MainWindow::on_pushButtonAverage_clicked()
     Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
     double height = ui->spinBoxAverage->value();
     newImage = average_filter(newImage, height);
+    savePPMP3("result.ppm", newImage);
+
+    QPixmap resImage ("result.ppm");
+    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    QString imagePath = ui->comboBox->currentData().toString();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+
+    newImage = laplace(newImage);
+    savePPMP3("result.ppm", newImage);
+
+    QPixmap resImage ("result.ppm");
+    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+}
+
+
+void MainWindow::on_ButtonR_clicked()
+{
+    QString imagePath = ui->comboBox->currentData().toString();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+
+    newImage = r(newImage, 'R');
+    savePPMP3("result.ppm", newImage);
+
+    QPixmap resImage ("result.ppm");
+    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+}
+
+
+void MainWindow::on_ButtonG_clicked()
+{
+    QString imagePath = ui->comboBox->currentData().toString();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+
+    newImage = r(newImage, 'G');
+    savePPMP3("result.ppm", newImage);
+
+    QPixmap resImage ("result.ppm");
+    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+}
+
+
+void MainWindow::on_ButtonB_clicked()
+{
+    QString imagePath = ui->comboBox->currentData().toString();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+
+    newImage = r(newImage, 'B');
     savePPMP3("result.ppm", newImage);
 
     QPixmap resImage ("result.ppm");
