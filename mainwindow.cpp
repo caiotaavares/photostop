@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QPixmap>
+#include <QSpinBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,13 +22,13 @@ MainWindow::MainWindow(QWidget *parent)
     QSpinBox *median = ui->spinBoxMedian;
     median->setValue(3);
     median->setSingleStep(2);
-    median->setMaximum(9);
+//    median->setMaximum(15);
     median->setMinimum(3);
 
     QSpinBox *average = ui->spinBoxAverage;
     average->setValue(3);
     average->setSingleStep(2);
-    average->setMaximum(9);
+//    average->setMaximum(15);
     average->setMinimum(3);
 }
 
@@ -58,9 +59,10 @@ void MainWindow::on_pushButton_clicked()
                                          QString::number(newImage.maxval)
                                         ));
 }
-
-
-void MainWindow::on_pushButton_2_clicked()
+//
+// @ FIltro da Mediana
+//
+void MainWindow::on_pushButtonMedian_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
     QPixmap image(imagePath);
@@ -71,15 +73,18 @@ void MainWindow::on_pushButton_2_clicked()
     }
 
     Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
-    newImage = median_filter(newImage);
+    double height = ui->spinBoxMedian->value();
+    newImage = median_filter(newImage, height);
     savePPMP3("result.ppm", newImage);
 
     QPixmap resImage ("result.ppm");
     ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
 }
 
-
-void MainWindow::on_pushButton_3_clicked()
+//
+// @FIltro da Média
+//
+void MainWindow::on_pushButtonAverage_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
     QPixmap image(imagePath);
@@ -90,7 +95,8 @@ void MainWindow::on_pushButton_3_clicked()
     }
 
     Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
-    newImage = average_filter(newImage);
+    double height = ui->spinBoxAverage->value();
+    newImage = average_filter(newImage, height);
     savePPMP3("result.ppm", newImage);
 
     QPixmap resImage ("result.ppm");

@@ -3,174 +3,170 @@
 
 #include "structs.h"
 
-int findMedianB(Array pixel[3][3]) {
-    int values[9];
-    int k = 0;
+using namespace std;
 
-    // Extract the values from the 3x3 matrix and store them in an array
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            values[k++] = pixel[i][j].B;
-        }
-    }
+// FILTRO DA MEDIANA
+// Um algoritmo mais rápido pode melhorar a velocidade
+// em filtros muito grandes
+//
+int findMedian(int *values, int filterSize) {
+    int median = filterSize / 2;
 
-    // Sort the values in ascending order
-    for (int i = 0; i < 9 - 1; i++) {
-        for (int j = 0; j < 9 - i - 1; j++) {
-            if (values[j] > values[j + 1]) {
-                int temp = values[j];
-                values[j] = values[j + 1];
-                values[j + 1] = temp;
+    // Quickselect algorithm
+    int low = 0;
+    int high = filterSize - 1;
+    while (low < high) {
+        int pivotIndex = low + (high - low) / 2;
+        int pivotValue = values[pivotIndex];
+        int i = low - 1;
+        int j = high + 1;
+        while (true) {
+            do {
+                i++;
+            } while (values[i] < pivotValue);
+            do {
+                j--;
+            } while (values[j] > pivotValue);
+            if (i >= j) {
+                break;
             }
+            int temp = values[i];
+            values[i] = values[j];
+            values[j] = temp;
+        }
+        if (j < median) {
+            low = j + 1;
+        } else if (j > median) {
+            high = j - 1;
+        } else {
+            break;
         }
     }
 
-    // Return the median value, which is in the middle of the sorted array
-    return values[5];
+    return values[median];
 }
 
-int findMedianG(Array pixel[3][3]) {
-    int values[9];
-    int k = 0;
+Image median_filter(const Image& image, int filterHeight) {
+    int filterSize = filterHeight * filterHeight;
 
-    // Extract the values from the 3x3 matrix and store them in an array
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            values[k++] = pixel[i][j].G;
-        }
-    }
-
-    // Sort the values in ascending order
-    for (int i = 0; i < 9 - 1; i++) {
-        for (int j = 0; j < 9 - i - 1; j++) {
-            if (values[j] > values[j + 1]) {
-                int temp = values[j];
-                values[j] = values[j + 1];
-                values[j + 1] = temp;
-            }
-        }
-    }
-
-    // Return the median value, which is in the middle of the sorted array
-    return values[5];
-}
-
-int findMedianR(Array pixel[3][3]) {
-    int values[9];
-    int k = 0;
-
-    // Extract the values from the 3x3 matrix and store them in an array
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            values[k++] = pixel[i][j].R;
-        }
-    }
-
-    // Sort the values in ascending order
-    for (int i = 0; i < 9 - 1; i++) {
-        for (int j = 0; j < 9 - i - 1; j++) {
-            if (values[j] > values[j + 1]) {
-                int temp = values[j];
-                values[j] = values[j + 1];
-                values[j + 1] = temp;
-            }
-        }
-    }
-
-    // Return the median value, which is in the middle of the sorted array
-    return values[5];
-}
-
-// Median filter
-Image median_filter(Image image) {
-    int filterSize = 3;
     Image filtered_image;
     filtered_image.version = image.version;
     filtered_image.comment = image.comment;
     filtered_image.numrows = image.numrows;
     filtered_image.numcols = image.numcols;
     filtered_image.maxval = image.maxval;
-    filtered_image.array = (Array **)malloc(filtered_image.numrows * sizeof(Array *));
-    for (int row = 0; row < filtered_image.numrows; ++row) {
-        filtered_image.array[row] = (Array *)malloc(filtered_image.numcols * sizeof(Array));
-    }
+    filtered_image.array = new Array*[filtered_image.numrows];
+    Array* filterMatrix = new Array[filterSize];
 
-    for (int row = 0; row < image.numrows; row++) {
-        for (int col = 0; col < image.numcols; col++) {
-            Array pixel[3][3] = {0};
-            for (int i = 0; i < filterSize; i++) {
-                for (int j = 0; j < filterSize; j++) {
-                    int neighbor_row = row - filterSize/2 + i;
-                    int neighbor_col = col - filterSize/2 + j;
+    for (int row = 0; row < filtered_image.numrows; ++row) {
+        filtered_image.array[row] = new Array[filtered_image.numcols];
+        for (int col = 0; col < filtered_image.numcols; col++) {
+            int k = 0;
+
+            // Extrais os valores da matriz
+            for (int i = 0; i < filterHeight; i++) {
+                for (int j = 0; j < filterHeight; j++) {
+                    int neighbor_row = row - filterHeight / 2 + i;
+                    int neighbor_col = col - filterHeight / 2 + j;
                     if (neighbor_col >= 0 && neighbor_col < image.numcols &&
                         neighbor_row >= 0 && neighbor_row < image.numrows) {
-                        pixel[i][j] = image.array[neighbor_row][neighbor_col];
+                        filterMatrix[k++] = image.array[neighbor_row][neighbor_col];
                     }
                 }
             }
 
-            filtered_image.array[row][col].R = findMedianR(pixel);
-            filtered_image.array[row][col].G = findMedianG(pixel);
-            filtered_image.array[row][col].B = findMedianB(pixel);
+            // Encontra o valor da mediana pra cada canal (R,G,B)
+            int* valuesR = new int[filterSize];
+            int* valuesG = new int[filterSize];
+            int* valuesB = new int[filterSize];
+            for (int i = 0; i < filterSize; i++) {
+                valuesR[i] = filterMatrix[i].R;
+                valuesG[i] = filterMatrix[i].G;
+                valuesB[i] = filterMatrix[i].B;
+            }
+
+            filtered_image.array[row][col].R = findMedian(valuesR, filterSize);
+            filtered_image.array[row][col].G = findMedian(valuesG, filterSize);
+            filtered_image.array[row][col].B = findMedian(valuesB, filterSize);
+
+            delete[] valuesR;
+            delete[] valuesG;
+            delete[] valuesB;
         }
     }
+
+    // Desaloca a memória
+    delete[] filterMatrix;
 
     return filtered_image;
 }
 
-Array calculateAverage(Array pixel[3][3]) {
-    Array averagePixel = {0, 0, 0};
+// FILTRO DA MEDIA
+Array calculateAverage(Array **pixel, int filterHeight) {
+    int sumR = 0;
+    int sumG = 0;
+    int sumB = 0;
 
-    // Calculate the sum of RGB values for each pixel in the 3x3 matrix
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            averagePixel.R += pixel[i][j].R;
-            averagePixel.G += pixel[i][j].G;
-            averagePixel.B += pixel[i][j].B;
+    // Calculate the sum of each channel
+    for (int i = 0; i < filterHeight; i++) {
+        for (int j = 0; j < filterHeight; j++) {
+            sumR += pixel[i][j].R;
+            sumG += pixel[i][j].G;
+            sumB += pixel[i][j].B;
         }
     }
 
-    // Divide the sum by 9 to get the average RGB values
-    averagePixel.R /= 9;
-    averagePixel.G /= 9;
-    averagePixel.B /= 9;
+    // Calculate the average value for each channel
+    int numPixels = filterHeight * filterHeight;
+    Array averagePixel;
+    averagePixel.R = sumR / numPixels;
+    averagePixel.G = sumG / numPixels;
+    averagePixel.B = sumB / numPixels;
 
     return averagePixel;
 }
 
-// Average filter
-Image average_filter(Image image) {
-    int filterSize = 3;
+Image average_filter(const Image& image, int filterHeight) {
     Image filtered_image;
     filtered_image.version = image.version;
     filtered_image.comment = image.comment;
     filtered_image.numrows = image.numrows;
     filtered_image.numcols = image.numcols;
     filtered_image.maxval = image.maxval;
-    filtered_image.array = (Array **)malloc(filtered_image.numrows * sizeof(Array *));
-    for (int row = 0; row < filtered_image.numrows; ++row) {
-        filtered_image.array[row] = (Array *)malloc(filtered_image.numcols * sizeof(Array));
-    }
+    filtered_image.array = new Array*[filtered_image.numrows];
 
-    for (int row = 0; row < image.numrows; row++) {
-        for (int col = 0; col < image.numcols; col++) {
-            Array pixel[3][3] = {0};
-            for (int i = 0; i < filterSize; i++) {
-                for (int j = 0; j < filterSize; j++) {
-                    int neighbor_row = row - filterSize/2 + i;
-                    int neighbor_col = col - filterSize/2 + j;
+    for (int row = 0; row < filtered_image.numrows; ++row) {
+        filtered_image.array[row] = new Array[filtered_image.numcols];
+        for (int col = 0; col < filtered_image.numcols; col++) {
+            Array **pixel = new Array*[filterHeight];
+            for (int i = 0; i < filterHeight; i++) {
+                pixel[i] = new Array[filterHeight];
+                for (int j = 0; j < filterHeight; j++) {
+                    int neighbor_row = row - filterHeight / 2 + i;
+                    int neighbor_col = col - filterHeight / 2 + j;
                     if (neighbor_col >= 0 && neighbor_col < image.numcols &&
                         neighbor_row >= 0 && neighbor_row < image.numrows) {
                         pixel[i][j] = image.array[neighbor_row][neighbor_col];
+                    } else {
+                        // Handle out-of-bounds pixels by copying the current pixel
+                        pixel[i][j] = image.array[row][col];
                     }
                 }
             }
 
-            filtered_image.array[row][col] = calculateAverage(pixel);
+            filtered_image.array[row][col] = calculateAverage(pixel, filterHeight);
+
+            // Deallocate memory for the filter matrix
+            for (int i = 0; i < filterHeight; i++) {
+                delete[] pixel[i];
+            }
+            delete[] pixel;
         }
     }
 
     return filtered_image;
 }
+
+
 
 #endif // PPMIMAGETREATMENT_H
