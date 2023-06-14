@@ -22,15 +22,17 @@ MainWindow::MainWindow(QWidget *parent)
     QSpinBox *median = ui->spinBoxMedian;
     median->setValue(3);
     median->setSingleStep(2);
-//    median->setMaximum(15);
     median->setMinimum(3);
 
     QSpinBox *average = ui->spinBoxAverage;
     average->setValue(3);
     average->setSingleStep(2);
-//    average->setMaximum(15);
     average->setMinimum(3);
 
+    QSpinBox *filterHeighBlurring = ui->spinBoxBlurring;
+    filterHeighBlurring->setValue(3);
+    filterHeighBlurring->setSingleStep(2);
+    filterHeighBlurring->setMinimum(3);
 }
 
 MainWindow::~MainWindow()
@@ -177,6 +179,66 @@ void MainWindow::on_ButtonB_clicked()
     Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
 
     newImage = r(newImage, 'B');
+    savePPMP3("result.ppm", newImage);
+
+    QPixmap resImage ("result.ppm");
+    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+}
+
+//High Boost
+void MainWindow::on_pushButtonHighBoost_clicked()
+{
+    QString imagePath = ui->comboBox->currentData().toString();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+    double boost = ui->doubleSpinBoxHighBoost->value();
+    newImage = high_boost(newImage, boost);
+    savePPMP3("result.ppm", newImage);
+
+    QPixmap resImage ("result.ppm");
+    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+}
+
+
+void MainWindow::on_pushButtonBluring_clicked()
+{
+    QString imagePath = ui->comboBox->currentData().toString();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+    double filterHeight = ui->spinBoxBlurring->value();
+    newImage = blurring(newImage, filterHeight);
+    savePPMP3("result.ppm", newImage);
+
+    QPixmap resImage ("result.ppm");
+    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+}
+
+
+void MainWindow::on_pushButtonGlobalEq_clicked()
+{
+    QString imagePath = ui->comboBox->currentData().toString();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+
+    newImage = histogram_equalization(newImage);
     savePPMP3("result.ppm", newImage);
 
     QPixmap resImage ("result.ppm");

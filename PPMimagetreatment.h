@@ -3,10 +3,10 @@
 
 #include "structs.h"
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
-// FILTRO DA MEDIANA
 // Um algoritmo mais rápido pode melhorar a velocidade
 // em filtros muito grandes
 //
@@ -47,6 +47,9 @@ int findMedian(int *values, int filterSize) {
     return values[median];
 }
 
+//
+// FILTRO DA MEDIANA
+//
 Image median_filter(const Image& image, int filterHeight) {
     int filterSize = filterHeight * filterHeight;
 
@@ -102,7 +105,9 @@ Image median_filter(const Image& image, int filterHeight) {
     return filtered_image;
 }
 
+//
 // FILTRO DA MEDIA
+//
 Array calculateAverage(Array **pixel, int filterHeight) {
     int sumR = 0;
     int sumG = 0;
@@ -168,7 +173,9 @@ Image average_filter(const Image& image, int filterHeight) {
     return filtered_image;
 }
 
+//
 // ISOLAR CANAIS
+//
 Image r(const Image& image, char channel) {
     Image filtered_image;
     filtered_image.version = image.version;
@@ -201,7 +208,9 @@ Image r(const Image& image, char channel) {
     return filtered_image;
 }
 
+//
 // LAPLACIANO
+//
 Image laplace(const Image& image) {
     Image filtered_image;
     int filterHeight = 3;
@@ -245,6 +254,10 @@ Image laplace(const Image& image) {
             filtered_image.array[row][col].R = clamp(sumR, 0, 255) / 9;
             filtered_image.array[row][col].G = clamp(sumG, 0, 255) / 9;
             filtered_image.array[row][col].B = clamp(sumB, 0, 255) / 9;
+
+            filtered_image.array[row][col].R += image.array[row][col].R;
+            filtered_image.array[row][col].G += image.array[row][col].G;
+            filtered_image.array[row][col].B += image.array[row][col].B;
             //            printf("%d\n", filtered_image.array[row][col].R);
             //            printf("%d\n", filtered_image.array[row][col].G);
             //            printf("%d\n", filtered_image.array[row][col].B);
@@ -255,6 +268,131 @@ Image laplace(const Image& image) {
     return filtered_image;
 }
 
+//
+// Filtro High Boost
+//
+Image blurring(const Image& image, double filterHeight) {
+    Image filtered_image;
+    filtered_image.version = image.version;
+    filtered_image.comment = image.comment;
+    filtered_image.numrows = image.numrows;
+    filtered_image.numcols = image.numcols;
+    filtered_image.maxval = image.maxval;
 
+    filtered_image.array = new Array*[filtered_image.numrows];
+    for (int row = 0; row < filtered_image.numrows; ++row) {
+        filtered_image.array[row] = new Array[filtered_image.numcols];
+        for (int col = 0; col < filtered_image.numcols; col++) {
+            int sumR = 0;
+            int sumG = 0;
+            int sumB = 0;
+            int count = 0;
+            for (int i = 0; i < filterHeight; i++) {
+                for (int j = 0; j < filterHeight; j++) {
+                    int neighbor_row = row - filterHeight / 2 + i;
+                    int neighbor_col = col - filterHeight / 2 + j;
+                    if (neighbor_col >= 0 && neighbor_col < image.numcols &&
+                        neighbor_row >= 0 && neighbor_row < image.numrows) {
+                        sumR += image.array[neighbor_row][neighbor_col].R;
+                        sumG += image.array[neighbor_row][neighbor_col].G;
+                        sumB += image.array[neighbor_row][neighbor_col].B;
+                        count++;
+                    }
+                }
+            }
 
+            filtered_image.array[row][col].R = sumR / count;
+            filtered_image.array[row][col].G = sumG / count;
+            filtered_image.array[row][col].B = sumB / count;
+        }
+    }
+
+    return filtered_image;
+}
+
+Image high_boost(const Image& image, double boostFactor) {
+    Image filtered_image, blurred_image;
+    filtered_image.version = image.version;
+    filtered_image.comment = image.comment;
+    filtered_image.numrows = image.numrows;
+    filtered_image.numcols = image.numcols;
+    filtered_image.maxval = image.maxval;
+
+    blurred_image = blurring(image, 9);
+
+    filtered_image.array = new Array*[filtered_image.numrows];
+    for (int row = 0; row < filtered_image.numrows; ++row) {
+        filtered_image.array[row] = new Array[filtered_image.numcols];
+        for (int col = 0; col < filtered_image.numcols; ++col) {
+            int mask_valueR = (int)(image.array[row][col].R - blurred_image.array[row][col].R);
+            int mask_valueG = (int)(image.array[row][col].G - blurred_image.array[row][col].G);
+            int mask_valueB = (int)(image.array[row][col].B - blurred_image.array[row][col].B);
+
+            int filtered_valueR = (int)(image.array[row][col].R + boostFactor * mask_valueR);
+            int filtered_valueG = (int)(image.array[row][col].G + boostFactor * mask_valueG);
+            int filtered_valueB = (int)(image.array[row][col].B + boostFactor * mask_valueB);
+
+            filtered_image.array[row][col].R = clamp(filtered_valueR, 0, 255);
+            filtered_image.array[row][col].G = clamp(filtered_valueG, 0, 255);
+            filtered_image.array[row][col].B = clamp(filtered_valueB, 0, 255);
+        }
+    }
+
+    return filtered_image;
+}
+
+//
+// Equalização global
+//
+Image histogram_equalization(Image image) {
+    Image down_image;
+    down_image.numrows = image.numrows;
+    down_image.numcols = image.numcols;
+    down_image.array = new Array*[down_image.numrows];
+    for (int row = 0; row < down_image.numrows; ++row) {
+        down_image.array[row] = new Array[down_image.numcols];
+    }
+
+    int histR[256] = {0};
+    int histG[256] = {0};
+    int histB[256] = {0};
+    int cdfR[256] = {0};
+    int cdfG[256] = {0};
+    int cdfB[256] = {0};
+    int pixels = image.numrows * image.numcols;
+    float alpha = 255.0 / pixels;
+
+    for (int row = 0; row < image.numrows; row++) {
+        for (int col = 0; col < image.numcols; col++) {
+            histR[image.array[row][col].R]++;
+            histG[image.array[row][col].G]++;
+            histB[image.array[row][col].B]++;
+        }
+    }
+
+    int sumR = 0;
+    int sumG = 0;
+    int sumB = 0;
+    for (int i = 0; i < 256; i++) {
+        sumR += histR[i];
+        sumG += histG[i];
+        sumB += histB[i];
+        cdfR[i] = round(alpha * sumR);
+        cdfG[i] = round(alpha * sumG);
+        cdfB[i] = round(alpha * sumB);
+    }
+
+    for (int row = 0; row < image.numrows; row++) {
+        for (int col = 0; col < image.numcols; col++) {
+            int pixelR = cdfR[image.array[row][col].R];
+            int pixelG = cdfG[image.array[row][col].G];
+            int pixelB = cdfB[image.array[row][col].B];
+            down_image.array[row][col].R = pixelR;
+            down_image.array[row][col].G = pixelG;
+            down_image.array[row][col].B = pixelB;
+        }
+    }
+
+    return down_image;
+}
 #endif // PPMIMAGETREATMENT_H

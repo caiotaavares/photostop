@@ -30,6 +30,12 @@ private slots:
 
     void on_ButtonB_clicked();
 
+    void on_pushButtonHighBoost_clicked();
+
+    void on_pushButtonBluring_clicked();
+
+    void on_pushButtonGlobalEq_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
