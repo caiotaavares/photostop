@@ -16,11 +16,11 @@ image processor written with C++ and QT
     - [X] P2 PGM ASCII (exemplo)
   - [X] Dimensão
   - [X] Valor máximo
-- [ ] Filtragem espacial
-  - [ ] Média (3x3, 5x5, ...)
-  - [ ] Mediana (3x3, 5x5, ...)
-  - [ ] Laplaciano
-  - [ ] Alto reforço (high boost)
-    - [ ] Filtro da média específicada
-  - [ ] Equalização de histograma global
+- [X] Filtragem espacial
+  - [X] Média (3x3, 5x5, ...)
+  - [X] Mediana (3x3, 5x5, ...)
+  - [X] Laplaciano
+  - [X] Alto reforço (high boost)
+    - [X] Filtro da média específicada
+  - [X] Equalização de histograma global
   - [ ] Extração e junção RGB
