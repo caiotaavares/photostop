@@ -67,7 +67,7 @@ Image median_filter(const Image& image, int filterHeight) {
         for (int col = 0; col < filtered_image.numcols; col++) {
             int k = 0;
 
-            // Extrais os valores da matriz
+            // Extrai os valores da matriz
             for (int i = 0; i < filterHeight; i++) {
                 for (int j = 0; j < filterHeight; j++) {
                     int neighbor_row = row - filterHeight / 2 + i;

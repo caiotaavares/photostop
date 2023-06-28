@@ -2,6 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <functional>
+#include "structs.h"
+
+using ImageFilterFunction = std::function<Image(const Image&)>;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,6 +20,8 @@ public:
     ~MainWindow();
 
 private slots:
+    void applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const QString& outputFilename);
+
     void on_pushButton_clicked();
 
     void on_pushButtonMedian_clicked();

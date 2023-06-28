@@ -9,6 +9,8 @@
 #include <QPixmap>
 #include <QSpinBox>
 
+using ImageFilterFunction = std::function<Image(const Image&)>;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -40,10 +42,40 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/*
+ * FUNÇÃO LAMBDA REPONSÁVEL POR APLICAR AS OPERAÇÕES NAs IMAGEM
+ *
+ * Carrega a imagem pelo caminho especificado
+ *
+ * checa se a imagem foi carregada corretamente
+ *
+ * usa read_image() para ler a imagem
+ *
+ * Aplica a função passada como parâmetro para filterFunction()
+ *
+ * salva a imagem como P3
+ *
+ * Salva o resultado da operação com base no que foi passado em outputFilename
+ */
+void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const QString& outputFilename) {
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+
+    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+    newImage = filterFunction(newImage);
+    savePPMP3(outputFilename.toUtf8().constData(), newImage);
+
+    QPixmap resImage(outputFilename);
+    ui->image->setPixmap(resImage.scaled(471, 401, Qt::KeepAspectRatio));
+}
+
 
 void MainWindow::on_pushButton_clicked()
 {
-    // Defina o valor inicial do caminho da imagem com base na seleção inicial do comboBox
     QString imagePath = ui->comboBox->currentData().toString();
     QPixmap image(imagePath);
 
@@ -62,186 +94,103 @@ void MainWindow::on_pushButton_clicked()
                                          QString::number(newImage.maxval)
                                         ));
 }
-//
-// @ FIltro da Mediana
-//
+
+/*
+ * Botão do Filtro da mediana
+ */
 void MainWindow::on_pushButtonMedian_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
-    QPixmap image(imagePath);
-
-    if (image.isNull()) {
-        QMessageBox::warning(this, "Error", "Failed to load image.");
-        return;
-    }
-
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+    QString imagePath = ui->comboBox->currentData().toString();   
     double height = ui->spinBoxMedian->value();
-    newImage = median_filter(newImage, height);
-    savePPMP3("result.ppm", newImage);
-
-    QPixmap resImage ("result.ppm");
-    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+    applyFilter(imagePath, [height](const Image& image) {
+            return median_filter(image, height);
+    }, "result.ppm");
 }
 
-//
-// @FIltro da Média
-//
+/*
+ * Botão do fitltro da média
+ */
 void MainWindow::on_pushButtonAverage_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
-    QPixmap image(imagePath);
-
-    if (image.isNull()) {
-        QMessageBox::warning(this, "Error", "Failed to load image.");
-        return;
-    }
-
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
     double height = ui->spinBoxAverage->value();
-    newImage = average_filter(newImage, height);
-    savePPMP3("result.ppm", newImage);
-
-    QPixmap resImage ("result.ppm");
-    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+    applyFilter(imagePath, [height](const Image &image) {
+        return average_filter(image, height);
+        }, "result.ppm");
 }
 
+/*
+ * Botão do filtro da mediana / Laplaciano
+ */
 void MainWindow::on_pushButton_2_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
-    QPixmap image(imagePath);
-
-    if (image.isNull()) {
-        QMessageBox::warning(this, "Error", "Failed to load image.");
-        return;
-    }
-
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
-
-    newImage = laplace(newImage);
-    savePPMP3("result.ppm", newImage);
-
-    QPixmap resImage ("result.ppm");
-    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+    applyFilter(imagePath, laplace ,"result.ppm");
 }
 
-
+/*
+ * Botão separador do canal R
+ */
 void MainWindow::on_ButtonR_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
-    QPixmap image(imagePath);
-
-    if (image.isNull()) {
-        QMessageBox::warning(this, "Error", "Failed to load image.");
-        return;
-    }
-
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
-
-    newImage = r(newImage, 'R');
-    savePPMP3("result.ppm", newImage);
-
-    QPixmap resImage ("result.ppm");
-    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+    applyFilter(imagePath, [](const Image& image) {
+            return r(image, 'R');
+        }, "result.ppm");
 }
 
-
+/*
+ * Botão separador do canal G
+ */
 void MainWindow::on_ButtonG_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
-    QPixmap image(imagePath);
-
-    if (image.isNull()) {
-        QMessageBox::warning(this, "Error", "Failed to load image.");
-        return;
-    }
-
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
-
-    newImage = r(newImage, 'G');
-    savePPMP3("result.ppm", newImage);
-
-    QPixmap resImage ("result.ppm");
-    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+    applyFilter(imagePath, [](const Image& image) {
+            return r(image, 'G');
+        }, "result.ppm");
 }
 
-
+/*
+ * Botão separador do canal B
+ */
 void MainWindow::on_ButtonB_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
-    QPixmap image(imagePath);
-
-    if (image.isNull()) {
-        QMessageBox::warning(this, "Error", "Failed to load image.");
-        return;
-    }
-
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
-
-    newImage = r(newImage, 'B');
-    savePPMP3("result.ppm", newImage);
-
-    QPixmap resImage ("result.ppm");
-    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+    applyFilter(imagePath, [](const Image& image) {
+            return r(image, 'B');
+        }, "result.ppm");
 }
 
-//High Boost
+/*
+ * botão Filtro High boost
+ */
 void MainWindow::on_pushButtonHighBoost_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
-    QPixmap image(imagePath);
-
-    if (image.isNull()) {
-        QMessageBox::warning(this, "Error", "Failed to load image.");
-        return;
-    }
-
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
     double boost = ui->doubleSpinBoxHighBoost->value();
-    newImage = high_boost(newImage, boost);
-    savePPMP3("result.ppm", newImage);
-
-    QPixmap resImage ("result.ppm");
-    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+    applyFilter(imagePath, [boost](const Image& image) {
+            return high_boost(image, boost);
+        }, "result.ppm");
 }
 
-
+/*
+ * botão Borramento
+ */
 void MainWindow::on_pushButtonBluring_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
-    QPixmap image(imagePath);
-
-    if (image.isNull()) {
-        QMessageBox::warning(this, "Error", "Failed to load image.");
-        return;
-    }
-
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
     double filterHeight = ui->spinBoxBlurring->value();
-    newImage = blurring(newImage, filterHeight);
-    savePPMP3("result.ppm", newImage);
-
-    QPixmap resImage ("result.ppm");
-    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+    applyFilter(imagePath, [filterHeight](const Image& image) {
+            return blurring(image, filterHeight);
+        }, "result.ppm");
 }
 
-
+/*
+ * Botão Equalização global
+ */
 void MainWindow::on_pushButtonGlobalEq_clicked()
 {
     QString imagePath = ui->comboBox->currentData().toString();
-    QPixmap image(imagePath);
-
-    if (image.isNull()) {
-        QMessageBox::warning(this, "Error", "Failed to load image.");
-        return;
-    }
-
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
-
-    newImage = histogram_equalization(newImage);
-    savePPMP3("result.ppm", newImage);
-
-    QPixmap resImage ("result.ppm");
-    ui->image->setPixmap(resImage.scaled(471,401,Qt::KeepAspectRatio));
+    applyFilter(imagePath, histogram_equalization, "result.ppm");
 }
 
