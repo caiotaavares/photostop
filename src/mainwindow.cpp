@@ -1,8 +1,8 @@
-#include "mainwindow.h"
+#include "headers/mainwindow.h"
 #include "ui_mainwindow.h"
-#include "imagemanagement.h"
-#include "structs.h"
-#include "PPMimagetreatment.h"
+#include "headers/imagemanagement.h"
+#include "../structs/structs.h"
+#include "headers/PPMimagetreatment.h"
 
 #include <QMessageBox>
 #include <QPlainTextEdit>

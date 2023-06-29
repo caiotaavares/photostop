@@ -1,7 +1,7 @@
 #ifndef PPMIMAGETREATMENT_H
 #define PPMIMAGETREATMENT_H
 
-#include "structs.h"
+#include "../../structs/structs.h"
 #include <algorithm>
 #include <cmath>
 

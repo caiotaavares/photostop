@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-#include "structs.h"
+#include "../../structs/structs.h"
 
 using namespace std;
 

@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <functional>
-#include "structs.h"
+#include "../../structs/structs.h"
 
 using ImageFilterFunction = std::function<Image(const Image&)>;
 

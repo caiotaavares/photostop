@@ -13,13 +13,13 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        structs.h
-        imagemanagement.h
-        PPMimagetreatment.h
+        src/mainwindow.ui
+        src/main.cpp
+        structs/structs.h
+        src/mainwindow.cpp
+        src/headers/mainwindow.h
+        src/headers/imagemanagement.h
+        src/headers/PPMimagetreatment.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
