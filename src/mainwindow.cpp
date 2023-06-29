@@ -1,13 +1,14 @@
 #include "headers/mainwindow.h"
 #include "ui_mainwindow.h"
-#include "headers/imagemanagement.h"
+#include "headers/image_management.h"
 #include "../structs/structs.h"
-#include "headers/PPMimagetreatment.h"
+#include "headers/ppm.h"
 
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QPixmap>
 #include <QSpinBox>
+#include <QLineEdit>
 
 using ImageFilterFunction = std::function<Image(const Image&)>;
 
@@ -65,7 +66,7 @@ void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction
         return;
     }
 
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+    Image newImage = read_image(imagePath.toUtf8().constData());
     newImage = filterFunction(newImage);
     savePPMP3(outputFilename.toUtf8().constData(), newImage);
 
@@ -73,10 +74,14 @@ void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction
     ui->image->setPixmap(resImage.scaled(471, 401, Qt::KeepAspectRatio));
 }
 
+QString MainWindow::getImagePath() {
+//    return ui->comboBox->currentData().toString();
+    return ui->lineImagePath->text();
+}
 
 void MainWindow::on_pushButton_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
+    QString imagePath = getImagePath();
     QPixmap image(imagePath);
 
     if (image.isNull()) {
@@ -100,7 +105,7 @@ void MainWindow::on_pushButton_clicked()
  */
 void MainWindow::on_pushButtonMedian_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();   
+    QString imagePath = getImagePath();
     double height = ui->spinBoxMedian->value();
     applyFilter(imagePath, [height](const Image& image) {
             return median_filter(image, height);
@@ -112,7 +117,7 @@ void MainWindow::on_pushButtonMedian_clicked()
  */
 void MainWindow::on_pushButtonAverage_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
+    QString imagePath = getImagePath();
     double height = ui->spinBoxAverage->value();
     applyFilter(imagePath, [height](const Image &image) {
         return average_filter(image, height);
@@ -124,7 +129,7 @@ void MainWindow::on_pushButtonAverage_clicked()
  */
 void MainWindow::on_pushButton_2_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
+    QString imagePath = getImagePath();
     applyFilter(imagePath, laplace ,"result.ppm");
 }
 
@@ -133,7 +138,7 @@ void MainWindow::on_pushButton_2_clicked()
  */
 void MainWindow::on_ButtonR_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
+    QString imagePath = getImagePath();
     applyFilter(imagePath, [](const Image& image) {
             return r(image, 'R');
         }, "result.ppm");
@@ -144,7 +149,7 @@ void MainWindow::on_ButtonR_clicked()
  */
 void MainWindow::on_ButtonG_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
+    QString imagePath = getImagePath();
     applyFilter(imagePath, [](const Image& image) {
             return r(image, 'G');
         }, "result.ppm");
@@ -155,7 +160,7 @@ void MainWindow::on_ButtonG_clicked()
  */
 void MainWindow::on_ButtonB_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
+    QString imagePath = getImagePath();
     applyFilter(imagePath, [](const Image& image) {
             return r(image, 'B');
         }, "result.ppm");
@@ -166,7 +171,7 @@ void MainWindow::on_ButtonB_clicked()
  */
 void MainWindow::on_pushButtonHighBoost_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
+    QString imagePath = getImagePath();
     double boost = ui->doubleSpinBoxHighBoost->value();
     applyFilter(imagePath, [boost](const Image& image) {
             return high_boost(image, boost);
@@ -178,7 +183,7 @@ void MainWindow::on_pushButtonHighBoost_clicked()
  */
 void MainWindow::on_pushButtonBluring_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
+    QString imagePath = getImagePath();
     double filterHeight = ui->spinBoxBlurring->value();
     applyFilter(imagePath, [filterHeight](const Image& image) {
             return blurring(image, filterHeight);
@@ -190,7 +195,7 @@ void MainWindow::on_pushButtonBluring_clicked()
  */
 void MainWindow::on_pushButtonGlobalEq_clicked()
 {
-    QString imagePath = ui->comboBox->currentData().toString();
+    QString imagePath = getImagePath();
     applyFilter(imagePath, histogram_equalization, "result.ppm");
 }
 

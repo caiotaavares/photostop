@@ -20,6 +20,8 @@ public:
     ~MainWindow();
 
 private slots:
+    QString getImagePath();
+
     void applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const QString& outputFilename);
 
     void on_pushButton_clicked();

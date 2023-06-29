@@ -5,6 +5,9 @@
 
 using namespace std;
 
+/*
+ * Structs para PPM
+ */
 typedef struct array {
     int R;
     int G;
@@ -19,5 +22,16 @@ typedef struct image {
     int numcols;
     int maxval;
 } Image;
+
+/*
+ * Structs para PGM
+ */
+typedef struct {
+    string version;
+    string comment;
+    int **array;
+    int numrows;
+    int numcols;
+} ImagePgm;
 
 #endif // STRUCTS_H

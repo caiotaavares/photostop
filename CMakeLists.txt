@@ -18,8 +18,8 @@ set(PROJECT_SOURCES
         structs/structs.h
         src/mainwindow.cpp
         src/headers/mainwindow.h
-        src/headers/imagemanagement.h
-        src/headers/PPMimagetreatment.h
+        src/headers/image_management.h
+        src/headers/ppm.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
