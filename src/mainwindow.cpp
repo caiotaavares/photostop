@@ -4,13 +4,19 @@
 #include "../structs/structs.h"
 #include "headers/ppm.h"
 
-#include <QMessageBox>
-#include <QPlainTextEdit>
-#include <QPixmap>
-#include <QSpinBox>
-#include <QLineEdit>
+#include "headers/pgm.h"
 
-using ImageFilterFunction = std::function<Image(const Image&)>;
+#include <QMessageBox>
+#include <QPixmap>
+#include <string>
+
+using namespace std;
+
+/*
+ * 1 = PPM
+ * 0 = PGM
+ */
+int GLOBAL_VERSION = 0;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -58,7 +64,8 @@ MainWindow::~MainWindow()
  *
  * Salva o resultado da operação com base no que foi passado em outputFilename
  */
-void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const QString& outputFilename) {
+void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const ImageFilterFunctionPgm& filterFunctionPgm, const QString& outputFilename)
+{
     QPixmap image(imagePath);
 
     if (image.isNull()) {
@@ -66,12 +73,23 @@ void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction
         return;
     }
 
-    Image newImage = read_image(imagePath.toUtf8().constData());
-    newImage = filterFunction(newImage);
-    savePPMP3(outputFilename.toUtf8().constData(), newImage);
+    if (GLOBAL_VERSION == 1) {
+        // Ler PPM
+        Image newImage = read_ppm(imagePath.toUtf8().constData());
+        newImage = filterFunction(newImage);
+        savePPMP3(outputFilename.toUtf8().constData(), newImage);
 
-    QPixmap resImage(outputFilename);
-    ui->image->setPixmap(resImage.scaled(471, 401, Qt::KeepAspectRatio));
+        QPixmap resImage(outputFilename);
+        ui->image->setPixmap(resImage.scaled(471, 401, Qt::KeepAspectRatio));
+    } else if (GLOBAL_VERSION == 0) {
+        // Ler PGM
+        ImagePgm newImagePgm = read_pgm(imagePath.toUtf8().constData());
+        newImagePgm = filterFunctionPgm(newImagePgm);
+        SavePGMP2(outputFilename.toUtf8().constData(), newImagePgm);
+
+        QPixmap resImage(outputFilename);
+        ui->image->setPixmap(resImage.scaled(471, 401, Qt::KeepAspectRatio));
+    }
 }
 
 QString MainWindow::getImagePath() {
@@ -79,8 +97,12 @@ QString MainWindow::getImagePath() {
     return ui->lineImagePath->text();
 }
 
+/*
+ * Botão ler PPM
+ */
 void MainWindow::on_pushButton_clicked()
 {
+    GLOBAL_VERSION = 1;
     QString imagePath = getImagePath();
     QPixmap image(imagePath);
 
@@ -90,7 +112,7 @@ void MainWindow::on_pushButton_clicked()
     }
 
     ui->image->setPixmap(image.scaled(471,401,Qt::KeepAspectRatio));
-    Image newImage = read_image(imagePath.toUtf8().constData());  // Converter QString para const char*
+    Image newImage = read_ppm(imagePath.toUtf8().constData());  // Converter QString para const char*
     ui->textEditInfos->setPlainText(QString("Version: %1\nComment: %2\n%3 %4\n%5")
                                         .arg(QString::fromStdString(newImage.version),
                                         QString::fromStdString(newImage.comment),
@@ -101,15 +123,47 @@ void MainWindow::on_pushButton_clicked()
 }
 
 /*
+ * Botão ler PGM
+ */
+void MainWindow::on_pushButtonLoadPpm_clicked()
+{
+    GLOBAL_VERSION = 0;
+    QString imagePath = getImagePath();
+    QPixmap image(imagePath);
+
+    if (image.isNull()) {
+        QMessageBox::warning(this, "Error", "Failed to load image.");
+        return;
+    }
+    ui->image->setPixmap(image.scaled(471,401,Qt::KeepAspectRatio));
+    ImagePgm newImage = read_pgm(imagePath.toUtf8().constData());
+    ui->textEditInfos->setPlainText(QString("Version: %1\nComment: %2\n%3 %4\n%5")
+                                        .arg(QString::fromStdString(newImage.version),
+                                             QString::fromStdString(newImage.comment),
+                                             QString::number(newImage.numcols),
+                                             QString::number(newImage.numrows),
+                                             QString::number(newImage.maxval)
+                                             ));
+}
+
+/*
  * Botão do Filtro da mediana
  */
 void MainWindow::on_pushButtonMedian_clicked()
 {
     QString imagePath = getImagePath();
     double height = ui->spinBoxMedian->value();
-    applyFilter(imagePath, [height](const Image& image) {
-            return median_filter(image, height);
-    }, "result.ppm");
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [height](const ImagePgm& imagepgm) {
+                return median_filter_pgm(imagepgm, height);
+            }, "result.pgm");
+    }
+
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [height](const Image& image) {
+                return median_filter(image, height);
+            }, nullptr, "result.ppm");
+    }
 }
 
 /*
@@ -118,10 +172,18 @@ void MainWindow::on_pushButtonMedian_clicked()
 void MainWindow::on_pushButtonAverage_clicked()
 {
     QString imagePath = getImagePath();
-    double height = ui->spinBoxAverage->value();
-    applyFilter(imagePath, [height](const Image &image) {
-        return average_filter(image, height);
-        }, "result.ppm");
+    double height = ui->spinBoxMedian->value();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [height](const ImagePgm& imagepgm) {
+                return average_filter_pgm(imagepgm, height);
+            }, "result.pgm");
+    }
+
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [height](const Image& image) {
+                return median_filter(image, height);
+            }, nullptr, "result.ppm");
+    }
 }
 
 /*
@@ -130,7 +192,7 @@ void MainWindow::on_pushButtonAverage_clicked()
 void MainWindow::on_pushButton_2_clicked()
 {
     QString imagePath = getImagePath();
-    applyFilter(imagePath, laplace ,"result.ppm");
+    applyFilter(imagePath, laplace , nullptr, "result.ppm");
 }
 
 /*
@@ -141,7 +203,7 @@ void MainWindow::on_ButtonR_clicked()
     QString imagePath = getImagePath();
     applyFilter(imagePath, [](const Image& image) {
             return r(image, 'R');
-        }, "result.ppm");
+        }, nullptr, "result.ppm");
 }
 
 /*
@@ -152,7 +214,7 @@ void MainWindow::on_ButtonG_clicked()
     QString imagePath = getImagePath();
     applyFilter(imagePath, [](const Image& image) {
             return r(image, 'G');
-        }, "result.ppm");
+        }, nullptr, "result.ppm");
 }
 
 /*
@@ -163,7 +225,7 @@ void MainWindow::on_ButtonB_clicked()
     QString imagePath = getImagePath();
     applyFilter(imagePath, [](const Image& image) {
             return r(image, 'B');
-        }, "result.ppm");
+        }, nullptr, "result.ppm");
 }
 
 /*
@@ -175,7 +237,7 @@ void MainWindow::on_pushButtonHighBoost_clicked()
     double boost = ui->doubleSpinBoxHighBoost->value();
     applyFilter(imagePath, [boost](const Image& image) {
             return high_boost(image, boost);
-        }, "result.ppm");
+        }, nullptr, "result.ppm");
 }
 
 /*
@@ -187,7 +249,7 @@ void MainWindow::on_pushButtonBluring_clicked()
     double filterHeight = ui->spinBoxBlurring->value();
     applyFilter(imagePath, [filterHeight](const Image& image) {
             return blurring(image, filterHeight);
-        }, "result.ppm");
+        }, nullptr, "result.ppm");
 }
 
 /*
@@ -196,6 +258,5 @@ void MainWindow::on_pushButtonBluring_clicked()
 void MainWindow::on_pushButtonGlobalEq_clicked()
 {
     QString imagePath = getImagePath();
-    applyFilter(imagePath, histogram_equalization, "result.ppm");
+    applyFilter(imagePath, histogram_equalization, nullptr, "result.ppm");
 }
-

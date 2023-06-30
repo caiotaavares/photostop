@@ -32,6 +32,7 @@ typedef struct {
     int **array;
     int numrows;
     int numcols;
+    int maxval;
 } ImagePgm;
 
 #endif // STRUCTS_H

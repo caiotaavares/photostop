@@ -228,9 +228,9 @@
    <widget class="QLineEdit" name="lineImagePath">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>170</x>
       <y>20</y>
-      <width>241</width>
+      <width>221</width>
       <height>25</height>
      </rect>
     </property>
@@ -243,22 +243,35 @@
      <rect>
       <x>20</x>
       <y>20</y>
-      <width>121</width>
+      <width>141</width>
       <height>25</height>
      </rect>
     </property>
     <property name="text">
-     <string>Carregar Imagem</string>
+     <string>Carregar Imagem ppm</string>
     </property>
    </widget>
    <widget class="QComboBox" name="comboBox">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>170</x>
       <y>50</y>
-      <width>151</width>
+      <width>221</width>
       <height>25</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonLoadPpm">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>50</y>
+      <width>141</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Caregar imagem pgm</string>
     </property>
    </widget>
   </widget>

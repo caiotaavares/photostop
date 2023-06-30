@@ -6,6 +6,7 @@
 #include "../../structs/structs.h"
 
 using ImageFilterFunction = std::function<Image(const Image&)>;
+using ImageFilterFunctionPgm = std::function<ImagePgm(const ImagePgm&)>;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -22,7 +23,8 @@ public:
 private slots:
     QString getImagePath();
 
-    void applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const QString& outputFilename);
+    void applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const ImageFilterFunctionPgm& filterFunctionPgm, const QString& outputFilename);
+//    void applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const QString& outputFilename);
 
     void on_pushButton_clicked();
 
@@ -43,6 +45,8 @@ private slots:
     void on_pushButtonBluring_clicked();
 
     void on_pushButtonGlobalEq_clicked();
+
+    void on_pushButtonLoadPpm_clicked();
 
 private:
     Ui::MainWindow *ui;
