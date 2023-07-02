@@ -209,7 +209,7 @@ Image r(const Image& image, char channel) {
 }
 
 //
-// LAPLACIANO
+// LAPLACIANO DIAGONAL
 //
 Image laplace(const Image& image) {
     Image filtered_image;
@@ -219,6 +219,67 @@ Image laplace(const Image& image) {
         {-1, 4, -1},
         {0 ,-1, 0}
     };
+    filtered_image.version = image.version;
+    filtered_image.comment = image.comment;
+    filtered_image.numrows = image.numrows;
+    filtered_image.numcols = image.numcols;
+    filtered_image.maxval = image.maxval;
+
+    filtered_image.array = new Array*[filtered_image.numrows];
+    for (int row = 0; row < filtered_image.numrows; ++row) {
+        filtered_image.array[row] = new Array[filtered_image.numcols];
+        for (int col = 0; col < filtered_image.numcols; col++) {
+            int sumR = 0;
+            int sumG = 0;
+            int sumB = 0;
+            for (int i = 0; i < filterHeight; i++) {
+                for (int j = 0; j < filterHeight; j++) {
+                    int neighbor_row = row - filterHeight / 2 + i;
+                    int neighbor_col = col - filterHeight / 2 + j;
+                    if (neighbor_col >= 0 && neighbor_col < image.numcols &&
+                        neighbor_row >= 0 && neighbor_row < image.numrows) {
+                        sumR += image.array[neighbor_row][neighbor_col].R * laplacianFilter[i][j];
+                        sumG += image.array[neighbor_row][neighbor_col].G * laplacianFilter[i][j];
+                        sumB += image.array[neighbor_row][neighbor_col].B * laplacianFilter[i][j];
+                        //                        printf("%d\n", sumR);
+                        //                        printf("%d\n", sumG);
+                        //                        printf("%d\n", sumB);
+                        //                        printf("\n");
+                    } else {
+                        filtered_image.array[row][col] = image.array[row][col];
+                    }
+                }
+            }
+
+            filtered_image.array[row][col].R = clamp(sumR, 0, 255) / 9;
+            filtered_image.array[row][col].G = clamp(sumG, 0, 255) / 9;
+            filtered_image.array[row][col].B = clamp(sumB, 0, 255) / 9;
+
+            filtered_image.array[row][col].R += image.array[row][col].R;
+            filtered_image.array[row][col].G += image.array[row][col].G;
+            filtered_image.array[row][col].B += image.array[row][col].B;
+            //            printf("%d\n", filtered_image.array[row][col].R);
+            //            printf("%d\n", filtered_image.array[row][col].G);
+            //            printf("%d\n", filtered_image.array[row][col].B);
+            //            printf("\n");
+        }
+    }
+
+    return filtered_image;
+}
+
+//
+// LAPLACIANO VIZINHANÇA 8
+//
+Image laplace_8(const Image& image) {
+    Image filtered_image;
+    int filterHeight = 3;
+    int laplacianFilter[3][3] = {
+        {-1, -1, -1},
+        {-1,  8, -1},
+        {-1, -1, -1}
+    };
+
     filtered_image.version = image.version;
     filtered_image.comment = image.comment;
     filtered_image.numrows = image.numrows;

@@ -155,21 +155,19 @@ ImagePgm read_pgm(const char* filename) {
 void SavePGMP2(const char* filename, const ImagePgm& imagePgm) {
     int numcols = imagePgm.numcols;
     int numrows = imagePgm.numrows;
-    int **array = imagePgm.array;
+    int** array = imagePgm.array;
     ofstream outFile(filename);
     if (outFile) {
         outFile << "P2\n";
         outFile << "# CREATOR: Caio Tavares\n";
         outFile << numcols << " " << numrows << "\n";
+        outFile << "255\n";  // Maximum value
         for (int row = 0; row < numrows; row++) {
             for (int col = 0; col < numcols; col++) {
                 int pixel = array[row][col];
-                if (row == 0 && col == 0) {
-                    outFile << "255\n";
-                } else {
-                    outFile << pixel << "\n";
-                }
+                outFile << pixel << " ";
             }
+            outFile << "\n";
         }
         outFile.close();
     } else {

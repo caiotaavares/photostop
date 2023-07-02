@@ -21,10 +21,11 @@ public:
     ~MainWindow();
 
 private slots:
+    void ppm_buttons(bool setButton);
+
     QString getImagePath();
 
     void applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const ImageFilterFunctionPgm& filterFunctionPgm, const QString& outputFilename);
-//    void applyFilter(const QString& imagePath, const ImageFilterFunction& filterFunction, const QString& outputFilename);
 
     void on_pushButton_clicked();
 
@@ -47,6 +48,18 @@ private slots:
     void on_pushButtonGlobalEq_clicked();
 
     void on_pushButtonLoadPpm_clicked();
+
+    void on_pushButtonlaplaciano8_clicked();
+
+    void on_pushButtonNegativo_clicked();
+
+    void on_pushButtonTurnPlus90_clicked();
+
+    void on_pushButtonTurnMinus90_clicked();
+
+    void on_pushButtonTurnPlus180_clicked();
+
+    void on_pushButtonBinarizing_clicked();
 
 private:
     Ui::MainWindow *ui;

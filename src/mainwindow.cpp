@@ -28,6 +28,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->comboBox->addItem("Lenna (P3)", "lennap3.ppm");
     ui->comboBox->addItem("Lenna (P6)", "lennap6.ppm");
 
+    ui->spinBoxBinarizing->setMaximum(255);
+    ui->spinBoxBinarizing->setMinimum(1);
+
     QSpinBox *median = ui->spinBoxMedian;
     median->setValue(3);
     median->setSingleStep(2);
@@ -47,6 +50,12 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::ppm_buttons(bool setButton) {
+    ui->ButtonR->setEnabled(setButton);
+    ui->ButtonG->setEnabled(setButton);
+    ui->ButtonB->setEnabled(setButton);
 }
 
 /*
@@ -87,7 +96,7 @@ void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction
         newImagePgm = filterFunctionPgm(newImagePgm);
         SavePGMP2(outputFilename.toUtf8().constData(), newImagePgm);
 
-        QPixmap resImage(outputFilename);
+        const QPixmap resImage(outputFilename);
         ui->image->setPixmap(resImage.scaled(471, 401, Qt::KeepAspectRatio));
     }
 }
@@ -110,6 +119,8 @@ void MainWindow::on_pushButton_clicked()
         QMessageBox::warning(this, "Error", "Failed to load image.");
         return;
     }
+
+    ppm_buttons(true);
 
     ui->image->setPixmap(image.scaled(471,401,Qt::KeepAspectRatio));
     Image newImage = read_ppm(imagePath.toUtf8().constData());  // Converter QString para const char*
@@ -135,6 +146,9 @@ void MainWindow::on_pushButtonLoadPpm_clicked()
         QMessageBox::warning(this, "Error", "Failed to load image.");
         return;
     }
+
+    ppm_buttons(false);
+
     ui->image->setPixmap(image.scaled(471,401,Qt::KeepAspectRatio));
     ImagePgm newImage = read_pgm(imagePath.toUtf8().constData());
     ui->textEditInfos->setPlainText(QString("Version: %1\nComment: %2\n%3 %4\n%5")
@@ -156,7 +170,7 @@ void MainWindow::on_pushButtonMedian_clicked()
     if (GLOBAL_VERSION == 0) {
         applyFilter(imagePath, nullptr, [height](const ImagePgm& imagepgm) {
                 return median_filter_pgm(imagepgm, height);
-            }, "result.pgm");
+            }, "resultpgm.pgm");
     }
 
     if (GLOBAL_VERSION == 1) {
@@ -181,18 +195,38 @@ void MainWindow::on_pushButtonAverage_clicked()
 
     if (GLOBAL_VERSION == 1) {
         applyFilter(imagePath, [height](const Image& image) {
-                return median_filter(image, height);
+                return average_filter(image, height);
             }, nullptr, "result.ppm");
     }
 }
 
 /*
- * Botão do filtro da mediana / Laplaciano
+ * Laplaciano
  */
 void MainWindow::on_pushButton_2_clicked()
 {
     QString imagePath = getImagePath();
-    applyFilter(imagePath, laplace , nullptr, "result.ppm");
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, laplacePgm, "result.pgm");
+    }
+
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, laplace, nullptr, "result.pgm");
+    }
+}
+ /*
+  * Laplaciano de vizinhança 8
+  */
+void MainWindow::on_pushButtonlaplaciano8_clicked()
+{
+    QString imagePath = getImagePath();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, laplacePgm_8, "result.pgm");
+    }
+
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, laplace_8, nullptr, "result.pgm");
+    }
 }
 
 /*
@@ -235,9 +269,17 @@ void MainWindow::on_pushButtonHighBoost_clicked()
 {
     QString imagePath = getImagePath();
     double boost = ui->doubleSpinBoxHighBoost->value();
-    applyFilter(imagePath, [boost](const Image& image) {
-            return high_boost(image, boost);
-        }, nullptr, "result.ppm");
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [boost](const ImagePgm& imagepgm) {
+                return highBoost_filter_pgm(imagepgm, boost);
+            }, "result.pgm");
+    }
+
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [boost](const Image& image) {
+                return high_boost(image, boost);
+            }, nullptr, "result.ppm");
+    }
 }
 
 /*
@@ -247,9 +289,17 @@ void MainWindow::on_pushButtonBluring_clicked()
 {
     QString imagePath = getImagePath();
     double filterHeight = ui->spinBoxBlurring->value();
-    applyFilter(imagePath, [filterHeight](const Image& image) {
-            return blurring(image, filterHeight);
-        }, nullptr, "result.ppm");
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [filterHeight](const ImagePgm& imagepgm) {
+                return blurringPgm(imagepgm, filterHeight);
+            }, "result.pgm");
+    }
+
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [filterHeight](const Image& image) {
+                return blurring(image, filterHeight);
+            }, nullptr, "result.ppm");
+    }
 }
 
 /*
@@ -258,5 +308,83 @@ void MainWindow::on_pushButtonBluring_clicked()
 void MainWindow::on_pushButtonGlobalEq_clicked()
 {
     QString imagePath = getImagePath();
-    applyFilter(imagePath, histogram_equalization, nullptr, "result.ppm");
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
+                return histogram_equalization_pgm(imagepgm);
+            }, "result.pgm");
+    }
+
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [](const Image& image) {
+                return histogram_equalization(image);
+            }, nullptr, "result.ppm");
+    }
 }
+
+/*
+ * Botão Negativo
+ */
+void MainWindow::on_pushButtonNegativo_clicked()
+{
+    QString imagePath = getImagePath();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
+                return negative(imagepgm);
+            }, "result.pgm");
+    }
+}
+
+/*
+ * Botão girar 90º
+ */
+void MainWindow::on_pushButtonTurnPlus90_clicked()
+{
+    QString imagePath = getImagePath();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
+                return turn_plus_90(imagepgm);
+            }, "result.pgm");
+    }
+}
+
+/*
+ * Botão Girar -90º
+ */
+void MainWindow::on_pushButtonTurnMinus90_clicked()
+{
+    QString imagePath = getImagePath();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
+                return turn_minus_90(imagepgm);
+            }, "result.pgm");
+    }
+}
+
+/*
+ * Botão girar +90º
+ */
+void MainWindow::on_pushButtonTurnPlus180_clicked()
+{
+    QString imagePath = getImagePath();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
+                return turn_plus_180(imagepgm);
+            }, "result.pgm");
+    }
+}
+
+/*
+ * Botão binarização
+ */
+void MainWindow::on_pushButtonBinarizing_clicked()
+{
+    QString imagePath = getImagePath();
+    double grey_scale = ui->spinBoxBinarizing->value();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [grey_scale](const ImagePgm& imagepgm) {
+                return binarizing(imagepgm, grey_scale);
+            }, "result.pgm");
+    }
+}
+
+
