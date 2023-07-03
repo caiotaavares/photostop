@@ -355,14 +355,12 @@ ImagePgm histogram_equalization_pgm(ImagePgm imagepgm) {
         }
     }
 
-    // Calculate the cumulative distribution function
     int sum = 0;
     for (int i = 0; i < 256; i++) {
         sum += hist[i];
         cdf[i] = round(alpha * sum);
     }
 
-    // Apply the equalization to each pixel
     for (int row = 0; row < imagepgm.numrows; row++) {
         for (int col = 0; col < imagepgm.numcols; col++) {
             filtered_image.array[row][col] = cdf[imagepgm.array[row][col]];
@@ -375,7 +373,7 @@ ImagePgm histogram_equalization_pgm(ImagePgm imagepgm) {
 /*
  * Negativo
  */
-ImagePgm negative(ImagePgm imagepgm) {
+ImagePgm negative_pgm(ImagePgm imagepgm) {
 
     // darken the image
     for(int row = 0; row < imagepgm.numrows; ++row) {
@@ -390,10 +388,13 @@ ImagePgm negative(ImagePgm imagepgm) {
 /*
  * Girar +90
  */
-ImagePgm turn_plus_90(ImagePgm imagepgm) {
+ImagePgm turn_plus_90_pgm(ImagePgm imagepgm) {
     ImagePgm sup_image;
-    sup_image.numrows = imagepgm.numcols; // Swap the rows and columns for the new image
-    sup_image.numcols = imagepgm.numrows;
+    sup_image.version = imagepgm.version;
+    sup_image.comment = imagepgm.comment;
+    sup_image.numrows = imagepgm.numrows;
+    sup_image.numcols = imagepgm.numcols;
+    sup_image.maxval = imagepgm.maxval;
 
     // Allocate memory for the new image
     sup_image.array = new int*[sup_image.numrows];
@@ -414,10 +415,13 @@ ImagePgm turn_plus_90(ImagePgm imagepgm) {
 /*
  * Girar -90
  */
-ImagePgm turn_minus_90(ImagePgm imagepgm) {
+ImagePgm turn_minus_90_pgm(ImagePgm imagepgm) {
     ImagePgm sup_image;
-    sup_image.numrows = imagepgm.numcols;
-    sup_image.numcols = imagepgm.numrows;
+    sup_image.version = imagepgm.version;
+    sup_image.comment = imagepgm.comment;
+    sup_image.numrows = imagepgm.numrows;
+    sup_image.numcols = imagepgm.numcols;
+    sup_image.maxval = imagepgm.maxval;
 
     sup_image.array = new int*[sup_image.numrows];
     for (int row = 0; row < sup_image.numrows; ++row) {
@@ -437,10 +441,13 @@ ImagePgm turn_minus_90(ImagePgm imagepgm) {
 /*
  * Girar 180
  */
-ImagePgm turn_plus_180(ImagePgm imagepgm) {
+ImagePgm turn_plus_180_pgm(ImagePgm imagepgm) {
     ImagePgm sup_image;
+    sup_image.version = imagepgm.version;
+    sup_image.comment = imagepgm.comment;
     sup_image.numrows = imagepgm.numrows;
     sup_image.numcols = imagepgm.numcols;
+    sup_image.maxval = imagepgm.maxval;
 
     sup_image.array = new int*[sup_image.numrows];
     for (int row = 0; row < sup_image.numrows; ++row) {
@@ -459,7 +466,7 @@ ImagePgm turn_plus_180(ImagePgm imagepgm) {
 /*
  * Binarização
  */
-ImagePgm binarizing(ImagePgm image, int k) {
+ImagePgm binarizing_pgm(ImagePgm image, int k) {
     for (int row = 0; row != image.numrows; row++) {
         for (int col = 0; col != image.numcols; col++) {
             if (image.array[row][col] <= k) image.array[row][col] = 0;
@@ -469,5 +476,117 @@ ImagePgm binarizing(ImagePgm image, int k) {
 
     return image;
 }
+
+/*
+ * Espelhamento
+ */
+ImagePgm horizontal_mirror_left_pgm(ImagePgm imagepgm) {
+    ImagePgm mirrored_image;
+    mirrored_image.version = imagepgm.version;
+    mirrored_image.comment = imagepgm.comment;
+    mirrored_image.numrows = imagepgm.numrows;
+    mirrored_image.numcols = imagepgm.numcols;
+    mirrored_image.maxval = imagepgm.maxval;
+
+    mirrored_image.array = new int*[mirrored_image.numrows];
+    for (int row = 0; row < mirrored_image.numrows; ++row) {
+        mirrored_image.array[row] = new int[mirrored_image.numcols];
+    }
+
+    for (int row = 0; row < mirrored_image.numrows; ++row) {
+        for (int col = 0; col < mirrored_image.numcols; ++col) {
+            mirrored_image.array[row][col] = imagepgm.array[row][imagepgm.numcols - 1 - col];
+        }
+    }
+
+    return mirrored_image;
+}
+
+/*
+ * Escurecer
+ */
+ImagePgm darken_pgm(ImagePgm imagepgm, int p) {
+
+    // darken the image
+    for(int row = 0; row < imagepgm.numrows; ++row) {
+        for(int col = 0; col < imagepgm.numcols; ++col) {
+            imagepgm.array[row][col] = imagepgm.array[row][col] - p;
+            if (imagepgm.array[row][col] < 0) imagepgm.array[row][col] = 0;
+        }
+    }
+    return imagepgm;
+}
+
+/*
+ * Whiten
+ */
+ImagePgm whiten_pgm(ImagePgm imagepgm, int p) {
+
+    // darken the image
+    for(int row = 0; row < imagepgm.numrows; ++row) {
+        for(int col = 0; col < imagepgm.numcols; ++col) {
+            imagepgm.array[row][col] = imagepgm.array[row][col] + p;
+            if (imagepgm.array[row][col] > 255) imagepgm.array[row][col] = 255;
+        }
+    }
+    return imagepgm;
+}
+
+/*
+ * binarização ternária
+ */
+ImagePgm variables_binarize_3_factors_pgm(ImagePgm imagepgm, int a, int b, int s_sup) {
+    //Alocate space for the sup image
+    ImagePgm sup_image;
+    sup_image.version = imagepgm.version;
+    sup_image.comment = imagepgm.comment;
+    sup_image.numrows = imagepgm.numrows;
+    sup_image.numcols = imagepgm.numcols;
+    sup_image.maxval = imagepgm.maxval;
+    sup_image.array = new int*[sup_image.numrows];
+    for (int row = 0; row < sup_image.numrows; ++row) {
+        sup_image.array[row] = new int[sup_image.numcols];
+    }
+
+    for (int row = 0; row < imagepgm.numrows; row++) {
+        for (int col = 0; col < imagepgm.numcols; col++) {
+            if(imagepgm.array[row][col] > a && imagepgm.array[row][col] < b) {
+                sup_image.array[row][col] = s_sup;
+            } else {
+                sup_image.array[row][col] = imagepgm.array[row][col];
+            }
+        }
+    }
+    return sup_image;
+}
+
+/*
+ * Binarização de quatro fatores
+ */
+ImagePgm variables_binarize_4_factors_pgm(ImagePgm imagepgm, int a, int b, int s_sup, int s_inf) {
+    // Allocate space for the sup image
+    ImagePgm sup_image;
+    sup_image.version = imagepgm.version;
+    sup_image.comment = imagepgm.comment;
+    sup_image.numrows = imagepgm.numrows;
+    sup_image.numcols = imagepgm.numcols;
+    sup_image.maxval = imagepgm.maxval;
+    sup_image.array = new int*[sup_image.numrows];
+    for (int row = 0; row < sup_image.numrows; ++row) {
+        sup_image.array[row] = new int[sup_image.numcols];
+    }
+
+    for (int row = 0; row < imagepgm.numrows; row++) {
+        for (int col = 0; col < imagepgm.numcols; col++) {
+            if (imagepgm.array[row][col] > a && imagepgm.array[row][col] < b) {
+                sup_image.array[row][col] = s_sup;
+            } else {
+                sup_image.array[row][col] = s_inf;
+            }
+        }
+    }
+    return sup_image;
+}
+
 
 #endif // PGM_H

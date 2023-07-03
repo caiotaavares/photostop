@@ -24,12 +24,30 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Adiciona as imagens ao ComboBox
-    ui->comboBox->addItem("Lenna (P3)", "lennap3.ppm");
-    ui->comboBox->addItem("Lenna (P6)", "lennap6.ppm");
-
     ui->spinBoxBinarizing->setMaximum(255);
     ui->spinBoxBinarizing->setMinimum(1);
+
+    ui->spinBoxDarken->setMaximum(255);
+    ui->spinBoxDarken->setMinimum(1);
+
+    ui->spinBoxWhiten->setMaximum(255);
+    ui->spinBoxWhiten->setMinimum(1);
+
+    ui->spinBoxBinTerB->setMaximum(255);
+    ui->spinBoxBinTerB->setMinimum(1);
+    ui->spinBoxBinTerA->setMaximum(255);
+    ui->spinBoxBinTerA->setMinimum(1);
+    ui->spinBoxBinTerLimSup->setMaximum(255);
+    ui->spinBoxBinTerLimSup->setMinimum(1);
+
+    ui->spinBoxBinQuatB->setMaximum(255);
+    ui->spinBoxBinQuatB->setMinimum(1);
+    ui->spinBoxBinQuatA->setMaximum(255);
+    ui->spinBoxBinQuatA->setMinimum(1);
+    ui->spinBoxBinQuatLimSup->setMaximum(255);
+    ui->spinBoxBinQuatLimSup->setMinimum(1);
+    ui->spinBoxBinQuatLimInf->setMaximum(255);
+    ui->spinBoxBinQuatLimInf->setMinimum(1);
 
     QSpinBox *median = ui->spinBoxMedian;
     median->setValue(3);
@@ -58,6 +76,15 @@ void MainWindow::ppm_buttons(bool setButton) {
     ui->ButtonB->setEnabled(setButton);
 }
 
+void MainWindow::pgm_buttons(bool setButton) {
+    ui->pushButtonBinarizing->setEnabled(setButton);
+    ui->pushButtonDarken->setEnabled(setButton);
+    ui->pushButtonWhiten->setEnabled(setButton);
+    ui->pushButtonBinTer->setEnabled(setButton);
+    ui->pushButtonBinQuat->setEnabled(setButton);
+    ui->pushButtonNegativo->setEnabled(setButton);
+}
+
 /*
  * FUNÇÃO LAMBDA REPONSÁVEL POR APLICAR AS OPERAÇÕES NAs IMAGEM
  *
@@ -82,9 +109,15 @@ void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction
         return;
     }
 
+    bool isChecked = ui->checkBoxSeq->isChecked();
     if (GLOBAL_VERSION == 1) {
         // Ler PPM
-        Image newImage = read_ppm(imagePath.toUtf8().constData());
+        Image newImage;
+        if (isChecked) {
+            Image newImage = read_ppm(outputFilename.toUtf8().constData());
+        } else {
+            Image newImage = read_ppm(imagePath.toUtf8().constData());
+        }
         newImage = filterFunction(newImage);
         savePPMP3(outputFilename.toUtf8().constData(), newImage);
 
@@ -92,7 +125,12 @@ void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction
         ui->image->setPixmap(resImage.scaled(471, 401, Qt::KeepAspectRatio));
     } else if (GLOBAL_VERSION == 0) {
         // Ler PGM
-        ImagePgm newImagePgm = read_pgm(imagePath.toUtf8().constData());
+        ImagePgm newImagePgm;
+        if (isChecked) {
+            newImagePgm = read_pgm(outputFilename.toUtf8().constData());
+        } else {
+            newImagePgm = read_pgm(imagePath.toUtf8().constData());
+        }
         newImagePgm = filterFunctionPgm(newImagePgm);
         SavePGMP2(outputFilename.toUtf8().constData(), newImagePgm);
 
@@ -121,6 +159,7 @@ void MainWindow::on_pushButton_clicked()
     }
 
     ppm_buttons(true);
+    pgm_buttons(false);
 
     ui->image->setPixmap(image.scaled(471,401,Qt::KeepAspectRatio));
     Image newImage = read_ppm(imagePath.toUtf8().constData());  // Converter QString para const char*
@@ -148,6 +187,7 @@ void MainWindow::on_pushButtonLoadPpm_clicked()
     }
 
     ppm_buttons(false);
+    pgm_buttons(true);
 
     ui->image->setPixmap(image.scaled(471,401,Qt::KeepAspectRatio));
     ImagePgm newImage = read_pgm(imagePath.toUtf8().constData());
@@ -329,7 +369,7 @@ void MainWindow::on_pushButtonNegativo_clicked()
     QString imagePath = getImagePath();
     if (GLOBAL_VERSION == 0) {
         applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
-                return negative(imagepgm);
+                return negative_pgm(imagepgm);
             }, "result.pgm");
     }
 }
@@ -342,8 +382,13 @@ void MainWindow::on_pushButtonTurnPlus90_clicked()
     QString imagePath = getImagePath();
     if (GLOBAL_VERSION == 0) {
         applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
-                return turn_plus_90(imagepgm);
+                return turn_plus_90_pgm(imagepgm);
             }, "result.pgm");
+    }
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [](const Image& image) {
+                return turn_plus_90(image);
+            }, nullptr, "result.ppm");
     }
 }
 
@@ -355,21 +400,31 @@ void MainWindow::on_pushButtonTurnMinus90_clicked()
     QString imagePath = getImagePath();
     if (GLOBAL_VERSION == 0) {
         applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
-                return turn_minus_90(imagepgm);
+                return turn_minus_90_pgm(imagepgm);
             }, "result.pgm");
+    }
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [](const Image& image) {
+                return turn_minus_90(image);
+            }, nullptr, "result.ppm");
     }
 }
 
 /*
- * Botão girar +90º
+ * Botão girar +180º
  */
 void MainWindow::on_pushButtonTurnPlus180_clicked()
 {
     QString imagePath = getImagePath();
     if (GLOBAL_VERSION == 0) {
         applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
-                return turn_plus_180(imagepgm);
+                return turn_plus_180_pgm(imagepgm);
             }, "result.pgm");
+    }
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [](const Image& image) {
+                return turn_plus_180(image);
+            }, nullptr, "result.ppm");
     }
 }
 
@@ -382,9 +437,79 @@ void MainWindow::on_pushButtonBinarizing_clicked()
     double grey_scale = ui->spinBoxBinarizing->value();
     if (GLOBAL_VERSION == 0) {
         applyFilter(imagePath, nullptr, [grey_scale](const ImagePgm& imagepgm) {
-                return binarizing(imagepgm, grey_scale);
+                return binarizing_pgm(imagepgm, grey_scale);
             }, "result.pgm");
     }
 }
 
+/*
+ * Espelhamento
+ */
+void MainWindow::on_pushButtonMirror_clicked()
+{
+    QString imagePath = getImagePath();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [](const ImagePgm& imagepgm) {
+                return horizontal_mirror_left_pgm(imagepgm);
+            }, "result.pgm");
+    }
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [](const Image& image) {
+                return horizontal_mirror_left(image);
+            }, nullptr, "result.ppm");
+    }
+}
+
+
+void MainWindow::on_pushButtonDarken_clicked()
+{
+    QString imagePath = getImagePath();
+    double grey_scale = ui->spinBoxDarken->value();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [grey_scale](const ImagePgm& imagepgm) {
+                return darken_pgm(imagepgm, grey_scale);
+            }, "result.pgm");
+    }
+}
+
+
+void MainWindow::on_pushButtonWhiten_clicked()
+{
+    QString imagePath = getImagePath();
+    double grey_scale = ui->spinBoxWhiten->value();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [grey_scale](const ImagePgm& imagepgm) {
+                return whiten_pgm(imagepgm, grey_scale);
+            }, "result.pgm");
+    }
+}
+
+
+void MainWindow::on_pushButtonBinTer_clicked()
+{
+    QString imagePath = getImagePath();
+    double a = ui->spinBoxBinTerA->value();
+    double b = ui->spinBoxBinTerB->value();
+    double lim_sup = ui->spinBoxBinTerLimSup->value();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [a, b, lim_sup](const ImagePgm& imagepgm) {
+                return variables_binarize_3_factors_pgm(imagepgm, a, b, lim_sup);
+            }, "result.pgm");
+    }
+}
+
+
+void MainWindow::on_pushButtonBinQuat_clicked()
+{
+    QString imagePath = getImagePath();
+    double a = ui->spinBoxBinQuatA->value();
+    double b = ui->spinBoxBinQuatB->value();
+    double lim_sup = ui->spinBoxBinQuatLimSup->value();
+    double lim_inf = ui->spinBoxBinQuatLimInf->value();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [a, b, lim_sup, lim_inf](const ImagePgm& imagepgm) {
+                return variables_binarize_4_factors_pgm(imagepgm, a, b, lim_sup, lim_inf);
+            }, "result.pgm");
+    }
+}
 

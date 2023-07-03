@@ -456,4 +456,107 @@ Image histogram_equalization(Image image) {
 
     return down_image;
 }
+
+/*
+ * Girar +90
+ */
+Image turn_plus_90(Image image) {
+    Image sup_image;
+    sup_image.version = image.version;
+    sup_image.comment = image.comment;
+    sup_image.numrows = image.numcols;
+    sup_image.numcols = image.numrows;
+    sup_image.maxval = image.maxval;
+
+    sup_image.array = new Array*[sup_image.numrows];
+    for (int row = 0; row < sup_image.numrows; ++row) {
+        sup_image.array[row] = new Array[sup_image.numcols];
+    }
+
+    for (int row = 0; row < sup_image.numrows; ++row) {
+        for (int col = 0; col < sup_image.numcols; ++col) {
+            sup_image.array[row][col] = image.array[image.numrows - 1 - col][row];
+        }
+    }
+
+    return sup_image;
+}
+
+/*
+ * Girar -90
+ */
+Image turn_minus_90(Image image) {
+    Image sup_image;
+    sup_image.version = image.version;
+    sup_image.comment = image.comment;
+    sup_image.numrows = image.numcols;
+    sup_image.numcols = image.numrows;
+    sup_image.maxval = image.maxval;
+
+    sup_image.array = new Array*[sup_image.numrows];
+    for (int row = 0; row < sup_image.numrows; ++row) {
+        sup_image.array[row] = new Array[sup_image.numcols];
+    }
+
+    for (int row = 0; row < sup_image.numrows; ++row) {
+        for (int col = 0; col < sup_image.numcols; ++col) {
+            sup_image.array[row][col] = image.array[col][image.numcols - 1 - row];
+        }
+    }
+
+    return sup_image;
+}
+
+/*
+ * Girar 180
+ */
+Image turn_plus_180(Image image) {
+    Image sup_image;
+    sup_image.version = image.version;
+    sup_image.comment = image.comment;
+    sup_image.numrows = image.numrows;
+    sup_image.numcols = image.numcols;
+    sup_image.maxval = image.maxval;
+
+    sup_image.array = new Array*[sup_image.numrows];
+    for (int row = 0; row < sup_image.numrows; ++row) {
+        sup_image.array[row] = new Array[sup_image.numcols];
+    }
+
+    for (int row = 0; row < sup_image.numrows; ++row) {
+        for (int col = 0; col < sup_image.numcols; ++col) {
+            sup_image.array[row][col] = image.array[image.numrows - 1 - row][image.numcols - 1 - col];
+        }
+    }
+
+    return sup_image;
+}
+
+/*
+ * Espelhamento horizontal
+ */
+Image horizontal_mirror_left(Image image) {
+    Image mirrored_image;
+    mirrored_image.version = image.version;
+    mirrored_image.comment = image.comment;
+    mirrored_image.numrows = image.numrows;
+    mirrored_image.numcols = image.numcols;
+    mirrored_image.maxval = image.maxval;
+
+    mirrored_image.array = new Array*[mirrored_image.numrows];
+    for (int row = 0; row < mirrored_image.numrows; ++row) {
+        mirrored_image.array[row] = new Array[mirrored_image.numcols];
+    }
+
+    for (int row = 0; row < mirrored_image.numrows; ++row) {
+        for (int col = 0; col < mirrored_image.numcols; ++col) {
+            mirrored_image.array[row][col] = image.array[row][image.numcols - 1 - col];
+        }
+    }
+
+    return mirrored_image;
+}
+
+
+
 #endif // PPMIMAGETREATMENT_H

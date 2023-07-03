@@ -21,6 +21,8 @@ public:
     ~MainWindow();
 
 private slots:
+    void pgm_buttons(bool setButton);
+
     void ppm_buttons(bool setButton);
 
     QString getImagePath();
@@ -60,6 +62,16 @@ private slots:
     void on_pushButtonTurnPlus180_clicked();
 
     void on_pushButtonBinarizing_clicked();
+
+    void on_pushButtonMirror_clicked();
+
+    void on_pushButtonDarken_clicked();
+
+    void on_pushButtonWhiten_clicked();
+
+    void on_pushButtonBinTer_clicked();
+
+    void on_pushButtonBinQuat_clicked();
 
 private:
     Ui::MainWindow *ui;
