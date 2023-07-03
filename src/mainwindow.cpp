@@ -229,7 +229,7 @@ void MainWindow::on_pushButtonLoadPpm_clicked()
                                       QString::number(newImage.maxval)
                                       ));
 
-//    applyFilter(imagePath, nullptr, nullptr, "result.pgm");
+    applyFilter(imagePath, nullptr, nullptr, "result.pgm");
 }
 
 /*
@@ -287,7 +287,7 @@ void MainWindow::on_pushButton_2_clicked()
     }
 
     if (GLOBAL_VERSION == 1) {
-        applyFilter(imagePath, laplace, nullptr, "result.pgm");
+        applyFilter(imagePath, laplace, nullptr, "result.ppm");
     }
 
     ui->textEditLogs->append(QString("Filtro Laplaciano aplicado em %1").arg(imagePath));
@@ -303,7 +303,7 @@ void MainWindow::on_pushButtonlaplaciano8_clicked()
     }
 
     if (GLOBAL_VERSION == 1) {
-        applyFilter(imagePath, laplace_8, nullptr, "result.pgm");
+        applyFilter(imagePath, laplace_8, nullptr, "result.ppm");
     }
 
     ui->textEditLogs->append(QString("Filtro Laplaciano de vizinhança-8 aplicado em %1").arg(imagePath));
