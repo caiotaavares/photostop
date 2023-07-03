@@ -114,11 +114,15 @@ void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction
         // Ler PPM
         Image newImage;
         if (isChecked) {
-            Image newImage = read_ppm(outputFilename.toUtf8().constData());
+            newImage = read_ppm(outputFilename.toUtf8().constData());
         } else {
-            Image newImage = read_ppm(imagePath.toUtf8().constData());
+            newImage = read_ppm(imagePath.toUtf8().constData());
         }
-        newImage = filterFunction(newImage);
+
+        if (filterFunction != nullptr) {
+            newImage = filterFunction(newImage);
+        }
+
         savePPMP3(outputFilename.toUtf8().constData(), newImage);
 
         QPixmap resImage(outputFilename);
@@ -131,7 +135,11 @@ void MainWindow::applyFilter(const QString& imagePath, const ImageFilterFunction
         } else {
             newImagePgm = read_pgm(imagePath.toUtf8().constData());
         }
-        newImagePgm = filterFunctionPgm(newImagePgm);
+
+        if (filterFunctionPgm != nullptr) {
+            newImagePgm = filterFunctionPgm(newImagePgm);
+        }
+
         SavePGMP2(outputFilename.toUtf8().constData(), newImagePgm);
 
         const QPixmap resImage(outputFilename);
@@ -170,6 +178,18 @@ void MainWindow::on_pushButton_clicked()
                                          QString::number(newImage.numrows),
                                          QString::number(newImage.maxval)
                                         ));
+
+    //logs
+    ui->textEditLogs->append(QString("Imagem m '%1' aberta com sucesso!").arg(imagePath));
+    ui->textEditLogs->append(QString("Version: %1\nComment: %2\n%3 %4\n%5")
+                                        .arg(QString::fromStdString(newImage.version),
+                                             QString::fromStdString(newImage.comment),
+                                             QString::number(newImage.numcols),
+                                             QString::number(newImage.numrows),
+                                             QString::number(newImage.maxval)
+                                             ));
+
+    applyFilter(imagePath, nullptr, nullptr, "result.ppm");
 }
 
 /*
@@ -198,6 +218,18 @@ void MainWindow::on_pushButtonLoadPpm_clicked()
                                              QString::number(newImage.numrows),
                                              QString::number(newImage.maxval)
                                              ));
+
+    //logs
+    ui->textEditLogs->append(QString("Imagem m '%1' aberta com sucesso!").arg(imagePath));
+    ui->textEditLogs->append(QString("Version: %1\nComment: %2\n%3 %4\n%5")
+                                 .arg(QString::fromStdString(newImage.version),
+                                      QString::fromStdString(newImage.comment),
+                                      QString::number(newImage.numcols),
+                                      QString::number(newImage.numrows),
+                                      QString::number(newImage.maxval)
+                                      ));
+
+//    applyFilter(imagePath, nullptr, nullptr, "result.pgm");
 }
 
 /*
@@ -218,6 +250,8 @@ void MainWindow::on_pushButtonMedian_clicked()
                 return median_filter(image, height);
             }, nullptr, "result.ppm");
     }
+
+    ui->textEditLogs->append(QString("Filtro da mediana aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -238,6 +272,8 @@ void MainWindow::on_pushButtonAverage_clicked()
                 return average_filter(image, height);
             }, nullptr, "result.ppm");
     }
+
+    ui->textEditLogs->append(QString("Filtro da média aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -253,6 +289,8 @@ void MainWindow::on_pushButton_2_clicked()
     if (GLOBAL_VERSION == 1) {
         applyFilter(imagePath, laplace, nullptr, "result.pgm");
     }
+
+    ui->textEditLogs->append(QString("Filtro Laplaciano aplicado em %1").arg(imagePath));
 }
  /*
   * Laplaciano de vizinhança 8
@@ -267,6 +305,8 @@ void MainWindow::on_pushButtonlaplaciano8_clicked()
     if (GLOBAL_VERSION == 1) {
         applyFilter(imagePath, laplace_8, nullptr, "result.pgm");
     }
+
+    ui->textEditLogs->append(QString("Filtro Laplaciano de vizinhança-8 aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -278,6 +318,8 @@ void MainWindow::on_ButtonR_clicked()
     applyFilter(imagePath, [](const Image& image) {
             return r(image, 'R');
         }, nullptr, "result.ppm");
+
+    ui->textEditLogs->append(QString("Separador de canais R aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -289,6 +331,8 @@ void MainWindow::on_ButtonG_clicked()
     applyFilter(imagePath, [](const Image& image) {
             return r(image, 'G');
         }, nullptr, "result.ppm");
+
+    ui->textEditLogs->append(QString("Separador de canais G aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -300,6 +344,8 @@ void MainWindow::on_ButtonB_clicked()
     applyFilter(imagePath, [](const Image& image) {
             return r(image, 'B');
         }, nullptr, "result.ppm");
+
+    ui->textEditLogs->append(QString("Separador de canais B aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -320,6 +366,8 @@ void MainWindow::on_pushButtonHighBoost_clicked()
                 return high_boost(image, boost);
             }, nullptr, "result.ppm");
     }
+
+    ui->textEditLogs->append(QString("Filtro High Boost aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -340,6 +388,8 @@ void MainWindow::on_pushButtonBluring_clicked()
                 return blurring(image, filterHeight);
             }, nullptr, "result.ppm");
     }
+
+    ui->textEditLogs->append(QString("Borramento aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -359,6 +409,8 @@ void MainWindow::on_pushButtonGlobalEq_clicked()
                 return histogram_equalization(image);
             }, nullptr, "result.ppm");
     }
+
+    ui->textEditLogs->append(QString("Equalização Global aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -372,6 +424,8 @@ void MainWindow::on_pushButtonNegativo_clicked()
                 return negative_pgm(imagepgm);
             }, "result.pgm");
     }
+
+    ui->textEditLogs->append(QString("Negativo aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -390,6 +444,8 @@ void MainWindow::on_pushButtonTurnPlus90_clicked()
                 return turn_plus_90(image);
             }, nullptr, "result.ppm");
     }
+
+    ui->textEditLogs->append(QString("Giro de 90º aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -408,6 +464,8 @@ void MainWindow::on_pushButtonTurnMinus90_clicked()
                 return turn_minus_90(image);
             }, nullptr, "result.ppm");
     }
+
+    ui->textEditLogs->append(QString("Giro de -90º aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -426,6 +484,8 @@ void MainWindow::on_pushButtonTurnPlus180_clicked()
                 return turn_plus_180(image);
             }, nullptr, "result.ppm");
     }
+
+    ui->textEditLogs->append(QString("Giro de 180º aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -440,6 +500,8 @@ void MainWindow::on_pushButtonBinarizing_clicked()
                 return binarizing_pgm(imagepgm, grey_scale);
             }, "result.pgm");
     }
+
+    ui->textEditLogs->append(QString("Binarização aplicado em %1").arg(imagePath));
 }
 
 /*
@@ -458,6 +520,8 @@ void MainWindow::on_pushButtonMirror_clicked()
                 return horizontal_mirror_left(image);
             }, nullptr, "result.ppm");
     }
+
+    ui->textEditLogs->append(QString("Espelhamento aplicado em %1").arg(imagePath));
 }
 
 
@@ -470,6 +534,8 @@ void MainWindow::on_pushButtonDarken_clicked()
                 return darken_pgm(imagepgm, grey_scale);
             }, "result.pgm");
     }
+
+    ui->textEditLogs->append(QString("Filtro de Escuro aplicado em %1").arg(imagePath));
 }
 
 
@@ -482,6 +548,8 @@ void MainWindow::on_pushButtonWhiten_clicked()
                 return whiten_pgm(imagepgm, grey_scale);
             }, "result.pgm");
     }
+
+    ui->textEditLogs->append(QString("Filtro de Claridade aplicado em %1").arg(imagePath));
 }
 
 
@@ -496,6 +564,8 @@ void MainWindow::on_pushButtonBinTer_clicked()
                 return variables_binarize_3_factors_pgm(imagepgm, a, b, lim_sup);
             }, "result.pgm");
     }
+
+    ui->textEditLogs->append(QString("Binarização de três fatores aplicado em %1").arg(imagePath));
 }
 
 
@@ -511,5 +581,7 @@ void MainWindow::on_pushButtonBinQuat_clicked()
                 return variables_binarize_4_factors_pgm(imagepgm, a, b, lim_sup, lim_inf);
             }, "result.pgm");
     }
+
+    ui->textEditLogs->append(QString("Binarização de quatro fatores aplicado em %1").arg(imagePath));
 }
 
