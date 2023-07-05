@@ -63,6 +63,11 @@ MainWindow::MainWindow(QWidget *parent)
     filterHeighBlurring->setValue(3);
     filterHeighBlurring->setSingleStep(2);
     filterHeighBlurring->setMinimum(3);
+
+    QSpinBox *spinBoxLocalEq = ui->spinBoxLocalEq;
+    spinBoxLocalEq->setValue(3);
+    spinBoxLocalEq->setSingleStep(2);
+    spinBoxLocalEq->setMinimum(3);
 }
 
 MainWindow::~MainWindow()
@@ -355,9 +360,10 @@ void MainWindow::on_pushButtonHighBoost_clicked()
 {
     QString imagePath = getImagePath();
     double boost = ui->doubleSpinBoxHighBoost->value();
+    double filterHeight = ui->spinBoxBlurring->value();
     if (GLOBAL_VERSION == 0) {
-        applyFilter(imagePath, nullptr, [boost](const ImagePgm& imagepgm) {
-                return highBoost_filter_pgm(imagepgm, boost);
+        applyFilter(imagePath, nullptr, [boost, filterHeight](const ImagePgm& imagepgm) {
+                return highBoost_filter_pgm(imagepgm, boost, filterHeight);
             }, "result.pgm");
     }
 
@@ -524,7 +530,9 @@ void MainWindow::on_pushButtonMirror_clicked()
     ui->textEditLogs->append(QString("Espelhamento aplicado em %1").arg(imagePath));
 }
 
-
+/*
+ * botão escurecer
+ */
 void MainWindow::on_pushButtonDarken_clicked()
 {
     QString imagePath = getImagePath();
@@ -538,7 +546,9 @@ void MainWindow::on_pushButtonDarken_clicked()
     ui->textEditLogs->append(QString("Filtro de Escuro aplicado em %1").arg(imagePath));
 }
 
-
+/*
+ * Botão clarear
+ */
 void MainWindow::on_pushButtonWhiten_clicked()
 {
     QString imagePath = getImagePath();
@@ -552,7 +562,9 @@ void MainWindow::on_pushButtonWhiten_clicked()
     ui->textEditLogs->append(QString("Filtro de Claridade aplicado em %1").arg(imagePath));
 }
 
-
+/*
+ * Botão binarização
+ */
 void MainWindow::on_pushButtonBinTer_clicked()
 {
     QString imagePath = getImagePath();
@@ -568,7 +580,9 @@ void MainWindow::on_pushButtonBinTer_clicked()
     ui->textEditLogs->append(QString("Binarização de três fatores aplicado em %1").arg(imagePath));
 }
 
-
+/*
+ * Binarização quaternária
+ */
 void MainWindow::on_pushButtonBinQuat_clicked()
 {
     QString imagePath = getImagePath();
@@ -583,5 +597,25 @@ void MainWindow::on_pushButtonBinQuat_clicked()
     }
 
     ui->textEditLogs->append(QString("Binarização de quatro fatores aplicado em %1").arg(imagePath));
+}
+
+/*
+ * Botão de Equaliação Local
+ */
+void MainWindow::on_pushButtonLocalEq_clicked()
+{
+    QString imagePath = getImagePath();
+    double filter = ui->spinBoxLocalEq->value();
+    if (GLOBAL_VERSION == 0) {
+        applyFilter(imagePath, nullptr, [filter](const ImagePgm& imagepgm) {
+                return local_histogram_equalization_pgm(imagepgm, filter);
+            }, "result.pgm");
+    }
+    if (GLOBAL_VERSION == 1) {
+        applyFilter(imagePath, [filter](const Image& image) {
+                return local_histogram_equalization(image, filter);
+            }, nullptr, "result.ppm");
+    }
+    ui->textEditLogs->append(QString("Equalização local aplcada em %1").arg(imagePath));
 }
 

@@ -132,6 +132,9 @@ Array calculateAverage(Array **pixel, int filterHeight) {
     return averagePixel;
 }
 
+/*
+ * Filtro da média
+ */
 Image average_filter(const Image& image, int filterHeight) {
     Image filtered_image;
     filtered_image.version = image.version;
@@ -241,10 +244,6 @@ Image laplace(const Image& image) {
                         sumR += image.array[neighbor_row][neighbor_col].R * laplacianFilter[i][j];
                         sumG += image.array[neighbor_row][neighbor_col].G * laplacianFilter[i][j];
                         sumB += image.array[neighbor_row][neighbor_col].B * laplacianFilter[i][j];
-                        //                        printf("%d\n", sumR);
-                        //                        printf("%d\n", sumG);
-                        //                        printf("%d\n", sumB);
-                        //                        printf("\n");
                     } else {
                         filtered_image.array[row][col] = image.array[row][col];
                     }
@@ -258,10 +257,6 @@ Image laplace(const Image& image) {
             filtered_image.array[row][col].R += image.array[row][col].R;
             filtered_image.array[row][col].G += image.array[row][col].G;
             filtered_image.array[row][col].B += image.array[row][col].B;
-            //            printf("%d\n", filtered_image.array[row][col].R);
-            //            printf("%d\n", filtered_image.array[row][col].G);
-            //            printf("%d\n", filtered_image.array[row][col].B);
-            //            printf("\n");
         }
     }
 
@@ -302,10 +297,6 @@ Image laplace_8(const Image& image) {
                         sumR += image.array[neighbor_row][neighbor_col].R * laplacianFilter[i][j];
                         sumG += image.array[neighbor_row][neighbor_col].G * laplacianFilter[i][j];
                         sumB += image.array[neighbor_row][neighbor_col].B * laplacianFilter[i][j];
-                        //                        printf("%d\n", sumR);
-                        //                        printf("%d\n", sumG);
-                        //                        printf("%d\n", sumB);
-                        //                        printf("\n");
                     } else {
                         filtered_image.array[row][col] = image.array[row][col];
                     }
@@ -319,10 +310,6 @@ Image laplace_8(const Image& image) {
             filtered_image.array[row][col].R += image.array[row][col].R;
             filtered_image.array[row][col].G += image.array[row][col].G;
             filtered_image.array[row][col].B += image.array[row][col].B;
-            //            printf("%d\n", filtered_image.array[row][col].R);
-            //            printf("%d\n", filtered_image.array[row][col].G);
-            //            printf("%d\n", filtered_image.array[row][col].B);
-            //            printf("\n");
         }
     }
 
@@ -330,7 +317,7 @@ Image laplace_8(const Image& image) {
 }
 
 //
-// Filtro High Boost
+// Borramento
 //
 Image blurring(const Image& image, double filterHeight) {
     Image filtered_image;
@@ -371,6 +358,9 @@ Image blurring(const Image& image, double filterHeight) {
     return filtered_image;
 }
 
+//
+// Filtro High Boost
+//
 Image high_boost(const Image& image, double boostFactor) {
     Image filtered_image, blurred_image;
     filtered_image.version = image.version;
@@ -456,6 +446,75 @@ Image histogram_equalization(Image image) {
 
     return down_image;
 }
+
+/*
+ *  Equalização local de histograma
+ */
+Image local_histogram_equalization(Image image, int filter_height) {
+    Image filtered_image;
+    filtered_image.version = image.version;
+    filtered_image.comment = image.comment;
+    filtered_image.numrows = image.numrows;
+    filtered_image.numcols = image.numcols;
+    filtered_image.maxval = image.maxval;
+    filtered_image.array = new Array*[filtered_image.numrows];
+
+    int histR[256] = {0};
+    int histG[256] = {0};
+    int histB[256] = {0};
+    int cdfR[256] = {0};
+    int cdfG[256] = {0};
+    int cdfB[256] = {0};
+    float alpha = 255.0 / (filter_height * filter_height);
+
+    for (int row = 0; row < image.numrows; row++) {
+        filtered_image.array[row] = new Array[filtered_image.numcols];
+
+        for (int col = 0; col < image.numcols; col++) {
+            // Zerar os histogramas a cada iteração
+            for (int i = 0; i < 256; i++) {
+                histR[i] = 0;
+                histG[i] = 0;
+                histB[i] = 0;
+            }
+
+            // Histograma para o espaço
+            for (int i = -filter_height/2; i <= filter_height/2; i++) {
+                for (int j = -filter_height/2; j <= filter_height/2; j++) {
+                    int neighbor_row = row + i;
+                    int neighbor_col = col + j;
+
+                    if (neighbor_row >= 0 && neighbor_row < image.numrows && neighbor_col >= 0 && neighbor_col < image.numcols) {
+                        histR[image.array[neighbor_row][neighbor_col].R]++;
+                        histG[image.array[neighbor_row][neighbor_col].G]++;
+                        histB[image.array[neighbor_row][neighbor_col].B]++;
+                    }
+                }
+            }
+
+            // Distribuição cumulativa
+            int sumR = 0;
+            int sumG = 0;
+            int sumB = 0;
+            for (int i = 0; i < 256; i++) {
+                sumR += histR[i];
+                sumG += histG[i];
+                sumB += histB[i];
+                cdfR[i] = round(alpha * sumR);
+                cdfG[i] = round(alpha * sumG);
+                cdfB[i] = round(alpha * sumB);
+            }
+
+            // Aplica a equalização
+            filtered_image.array[row][col].R = cdfR[image.array[row][col].R];
+            filtered_image.array[row][col].G = cdfG[image.array[row][col].G];
+            filtered_image.array[row][col].B = cdfB[image.array[row][col].B];
+        }
+    }
+
+    return filtered_image;
+}
+
 
 /*
  * Girar +90

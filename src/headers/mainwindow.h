@@ -73,6 +73,8 @@ private slots:
 
     void on_pushButtonBinQuat_clicked();
 
+    void on_pushButtonLocalEq_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

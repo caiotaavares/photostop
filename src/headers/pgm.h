@@ -252,7 +252,7 @@ ImagePgm blurringPgm(ImagePgm imagepgm, double filterHeight) {
 /*
  * Filtro High Boost
  */
-ImagePgm highBoost_filter_pgm(ImagePgm imagepgm, double boostFactor) {
+ImagePgm highBoost_filter_pgm(ImagePgm imagepgm, double boostFactor, double filterHeight) {
     int filterSize = 3;
 
     ImagePgm filtered_image;
@@ -267,7 +267,7 @@ ImagePgm highBoost_filter_pgm(ImagePgm imagepgm, double boostFactor) {
     }
 
     // Cria uma imagem borrada
-    ImagePgm blurred_image = blurringPgm(imagepgm, boostFactor);
+    ImagePgm blurred_image = blurringPgm(imagepgm, filterHeight);
 
     // Cria uma máscara subtraindo a imagem borrada da original
     for (int row = 0; row < imagepgm.numrows; row++) {
@@ -284,7 +284,7 @@ ImagePgm highBoost_filter_pgm(ImagePgm imagepgm, double boostFactor) {
 /*
  *  Equalização local de histograma
  */
-ImagePgm local_histogram_equalization_pgm(ImagePgm imagepgm) {
+ImagePgm local_histogram_equalization_pgm(ImagePgm imagepgm, int filter_height) {
     ImagePgm filtered_image;
     filtered_image.version = imagepgm.version;
     filtered_image.comment = imagepgm.comment;
@@ -295,20 +295,25 @@ ImagePgm local_histogram_equalization_pgm(ImagePgm imagepgm) {
 
     int hist[256] = {0};
     int cdf[256] = {0};
-    float alpha = 255.0 / 9.0;  // Valor de alpha para o espaço 3x3
+    float alpha = 255.0 / (filter_height * filter_height);
 
     for (int row = 0; row < imagepgm.numrows; row++) {
+        filtered_image.array[row] = new int[filtered_image.numcols];
+
         for (int col = 0; col < imagepgm.numcols; col++) {
             // Zerar o histograma
             for (int i = 0; i < 256; i++) {
                 hist[i] = 0;
             }
 
-            // Calcular o histograma para o espaço 3x3
-            for (int i = row - 1; i <= row + 1; i++) {
-                for (int j = col - 1; j <= col + 1; j++) {
-                    if (i >= 0 && i < imagepgm.numrows && j >= 0 && j < imagepgm.numcols) {
-                        hist[imagepgm.array[i][j]]++;
+            // Calcular o histograma para o espaço filter_height x filter_height
+            for (int i = -filter_height / 2; i <= filter_height / 2; i++) {
+                for (int j = -filter_height / 2; j <= filter_height / 2; j++) {
+                    int neighbor_row = row + i;
+                    int neighbor_col = col + j;
+
+                    if (neighbor_row >= 0 && neighbor_row < imagepgm.numrows && neighbor_col >= 0 && neighbor_col < imagepgm.numcols) {
+                        hist[imagepgm.array[neighbor_row][neighbor_col]]++;
                     }
                 }
             }
@@ -321,12 +326,13 @@ ImagePgm local_histogram_equalization_pgm(ImagePgm imagepgm) {
             }
 
             // Aplicar a equalização para o pixel atual
-            imagepgm.array[row][col] = cdf[imagepgm.array[row][col]];
+            filtered_image.array[row][col] = cdf[imagepgm.array[row][col]];
         }
     }
 
     return filtered_image;
 }
+
 
 /*
  * Equalização global
@@ -507,7 +513,6 @@ ImagePgm horizontal_mirror_left_pgm(ImagePgm imagepgm) {
  */
 ImagePgm darken_pgm(ImagePgm imagepgm, int p) {
 
-    // darken the image
     for(int row = 0; row < imagepgm.numrows; ++row) {
         for(int col = 0; col < imagepgm.numcols; ++col) {
             imagepgm.array[row][col] = imagepgm.array[row][col] - p;
@@ -522,7 +527,6 @@ ImagePgm darken_pgm(ImagePgm imagepgm, int p) {
  */
 ImagePgm whiten_pgm(ImagePgm imagepgm, int p) {
 
-    // darken the image
     for(int row = 0; row < imagepgm.numrows; ++row) {
         for(int col = 0; col < imagepgm.numcols; ++col) {
             imagepgm.array[row][col] = imagepgm.array[row][col] + p;
@@ -536,7 +540,6 @@ ImagePgm whiten_pgm(ImagePgm imagepgm, int p) {
  * binarização ternária
  */
 ImagePgm variables_binarize_3_factors_pgm(ImagePgm imagepgm, int a, int b, int s_sup) {
-    //Alocate space for the sup image
     ImagePgm sup_image;
     sup_image.version = imagepgm.version;
     sup_image.comment = imagepgm.comment;
@@ -564,7 +567,6 @@ ImagePgm variables_binarize_3_factors_pgm(ImagePgm imagepgm, int a, int b, int s
  * Binarização de quatro fatores
  */
 ImagePgm variables_binarize_4_factors_pgm(ImagePgm imagepgm, int a, int b, int s_sup, int s_inf) {
-    // Allocate space for the sup image
     ImagePgm sup_image;
     sup_image.version = imagepgm.version;
     sup_image.comment = imagepgm.comment;

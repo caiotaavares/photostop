@@ -69,6 +69,9 @@ Image read_ppm(const char* filename) {
     return image;
 }
 
+/*
+ * Salva imagens PPM em P3
+ */
 void savePPMP3(const char* filename, const Image& image) {
     ofstream outfile(filename);
     if (!outfile) {
@@ -76,13 +79,13 @@ void savePPMP3(const char* filename, const Image& image) {
         return;
     }
 
-    // Write PPM header
+    // Escreve o header
     outfile << "P3" << endl;
     outfile << "# Imagem Gerada por photoStop" << endl;
     outfile << image.numcols << " " << image.numrows << endl;
     outfile << "255" << endl;
 
-    // Write the RGB pixels
+    // Escreve os pixels
     for (int row = 0; row < image.numrows; ++row) {
         for (int col = 0; col < image.numcols; ++col) {
             outfile << image.array[row][col].R << " ";
@@ -104,34 +107,33 @@ ImagePgm read_pgm(const char* filename) {
     stringstream ss;
     string inputLine = "";
 
-    // First line: version
+    // Versão
     getline(infile, inputLine);
     cout << "Version: " << inputLine << endl;
 
-    // Store version in Image structure
+    // Estrutura
     string version = inputLine;
     cout << "Version: " << version << endl;
 
-    // Second line: comment
+    // Comentário
     getline(infile, inputLine);
     cout << "Comment: " << inputLine << endl;
 
-    // Store comment in Image structure
+    // Armazena comentário
     string comment = inputLine;
 
-    // Continue with a stringstream
     ss << infile.rdbuf();
-    // Third line: size
+    // Tamanho
     ss >> numcols >> numrows;
     cout << numcols << " columns and " << numrows << " rows" << endl;
 
-    // Fourth line: maximum value
+    // valor máximo
     ss >> maxval;
     cout << "Maximum value: " << maxval << endl;
 
 
     int **array = new int*[numrows];
-    // Following lines : data
+    // Dados
     for(row = 0; row < numrows; ++row) {
         array[row] = new int[numcols];
         for (col = 0; col < numcols; ++col) ss >> array[row][col];
@@ -171,7 +173,7 @@ void SavePGMP2(const char* filename, const ImagePgm& imagePgm) {
         }
         outFile.close();
     } else {
-        cout << "Failed to open file for writing." << endl;
+        cout << "A leitura do arquivo falhou." << endl;
     }
 }
 
